@@ -73,9 +73,8 @@ class Q:
         Parse flags and extract command and arguments.
         """
         try:
-            if QSettings.APP_PROJECT:
-                project=eval(QSettings.APP_PROJECT)
-                self.project = project()
+            if QSettings.APP:
+                self.project = QProject.create(QSettings)
             else:
                 if len(argv) > 0 and argv[0] in ['help', 'settings']:
                     self.project = QProject()

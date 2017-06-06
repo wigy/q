@@ -15,10 +15,12 @@ class QSettings:
     """
     Configuration for the current project.
     """
+    # Name of the project.
+    APP = None
     # Root directory of the application git tree.
     APPDIR = None
-    # Name of the class managing this project.
-    APP_PROJECT = None
+    # Path to the settings (filled automatically).
+    APPSETTINGS = None
     # Which branch is used by default as a base for new features.
     BASE_BRANCH = 'master'
     # New branch name patterb. %c ticket code, %u user, %t title in lower case underscored
@@ -123,6 +125,7 @@ class QSettings:
             if data[k] == 'False':
                 data[k] = False
             QSettings.__dict__[k] = data[k]
+        QSettings.APPSETTINGS = path
 
     @staticmethod
     def find(path = None):

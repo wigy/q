@@ -97,6 +97,8 @@ class Ticket:
             raise QError("Cannot switch from status %r to %r.", old, new)
 
     def __init__(self, cmd, code=None):
+        if not QSettings.WORKDIR:
+            raise QError("Ticket storage directory WORKDIR is not set.")
         self.cmd = cmd
         self.root_path = QSettings.WORKDIR
         self.code = code

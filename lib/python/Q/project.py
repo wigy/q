@@ -50,3 +50,23 @@ class QProject:
             if os.path.exists(p+"/"+basename):
                 return p+"/"+basename
         raise QError("Cannot find a file '%s'.", basename)
+
+    @classmethod
+    def create(cls, settings):
+        project_path = os.path.dirname(settings.APPSETTINGS) + '/.q.project.py'
+        if not os.path.exists(project_path):
+            # TODO: Add mixing classes based on configuration.
+            # TODO: Crash if no APP_TICKET_CLASS is not set.
+            definition = """#
+# Automatically generated from `.q`.
+# Just delete this if you want to regenerate it.
+#
+class Project(QProject):
+    pass
+"""
+            f = open(project_path,'w')
+            f.write(definition)
+            f.close()
+        content = {}
+        exec(open(project_path).read(), globals())
+        return Project()
