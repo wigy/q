@@ -12,6 +12,6 @@
 if __name__ == "__main__":
     import sys
     import os
-    sys.path.append(os.path.dirname(__file__) + '/../lib/python')
+    sys.path.append(os.path.realpath(os.path.dirname(os.path.realpath(sys.argv[0])) + '/../lib/python'))
     from Q.q import Q
     Q(*sys.argv[1:])
