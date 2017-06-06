@@ -97,8 +97,6 @@ class Ticket:
             raise QError("Cannot switch from status %r to %r.", old, new)
 
     def __init__(self, cmd, code=None):
-        if not QSettings.WORKDIR:
-            raise QError("Ticket storage directory WORKDIR is not set.")
         self.cmd = cmd
         self.root_path = QSettings.WORKDIR
         self.code = code
@@ -171,6 +169,8 @@ class Ticket:
         """
         if not self.code:
             return None
+        if not QSettings.WORKDIR:
+            raise QError("Ticket storage directory WORKDIR is not set.")
         ret = self.root_path + "/" + self.code
         if subdir:
             ret += "/" + subdir
@@ -186,6 +186,8 @@ class Ticket:
         """
         Check if this ticket path exists.
         """
+        if not QSettings.WORKDIR:
+            raise QError("Ticket storage directory WORKDIR is not set.")
         if os.path.isdir(self.root_path + "/" + code):
             return True
         return False
@@ -297,6 +299,8 @@ class Ticket:
         """
         Get the list of all codes for tickets found.
         """
+        if not QSettings.WORKDIR:
+            raise QError("Ticket storage directory WORKDIR is not set.")
         ret = []
         if not os.path.isdir(self.root_path):
             self.wr("Creating ticket directory '%s'.", self.root_path, channel="Initialize")

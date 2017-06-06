@@ -74,6 +74,7 @@ class Q:
         """
         try:
             if QSettings.APP:
+                # TODO: This gives confusing error once .q is created but not edited. Change this logic.
                 self.project = QProject.create(QSettings)
             else:
                 if len(argv) > 0 and argv[0] in ['help', 'settings']:

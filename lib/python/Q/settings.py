@@ -17,6 +17,12 @@ class QSettings:
     """
     # Name of the project.
     APP = None
+    # Mixin classes to use in the project.
+    APP_TICKETING = 'ManualTicketing'
+    APP_RELEASING = 'NoReleasing'
+    APP_REVIEWING = 'NoReview'
+    APP_BUILDING = 'NoBuild'
+    APP_TESTING = 'TestingByShellCommands'
     # Root directory of the application git tree.
     APPDIR = None
     # Path to the settings (filled automatically).

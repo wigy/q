@@ -61,9 +61,14 @@ class QProject:
 # Automatically generated from `.q`.
 # Just delete this if you want to regenerate it.
 #
-class Project(QProject):
+class Project(QProject, APP_TICKETING, APP_RELEASING, APP_REVIEWING, APP_BUILDING, APP_TESTING):
     pass
 """
+            definition = definition.replace('APP_TICKETING', settings.APP_TICKETING)
+            definition = definition.replace('APP_RELEASING', settings.APP_RELEASING)
+            definition = definition.replace('APP_REVIEWING', settings.APP_REVIEWING)
+            definition = definition.replace('APP_BUILDING', settings.APP_BUILDING)
+            definition = definition.replace('APP_TESTING', settings.APP_TESTING)
             f = open(project_path,'w')
             f.write(definition)
             f.close()
