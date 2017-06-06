@@ -69,7 +69,7 @@ class QFile:
         """
         key_list = order
         if not key_list:
-            key_list = values.keys()
+            key_list = sorted(values.keys())
         out = ""
         for k in key_list:
             if not k in values:
