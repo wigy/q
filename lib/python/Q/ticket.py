@@ -7,6 +7,7 @@ import readline
 import glob
 import time
 import shutil
+from distutils.dir_util import mkpath
 
 from error import QError
 from settings import QSettings
@@ -304,7 +305,7 @@ class Ticket:
         ret = []
         if not os.path.isdir(self.root_path):
             self.wr("Creating ticket directory '%s'.", self.root_path, channel="Initialize")
-            os.mkdir(self.root_path)
+            mkpath(self.root_path)
         for p in os.listdir(self.root_path):
             if os.path.isfile(self.root_path+"/"+p+"/README"):
                 ret.append(p)
