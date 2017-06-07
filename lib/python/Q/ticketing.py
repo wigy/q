@@ -2,6 +2,7 @@ import xmlrpclib
 import json
 import urllib
 import re
+import requests
 
 from settings import QSettings
 from error import QError
@@ -59,7 +60,7 @@ class TicketingMixin:
         """
         raise QError("Not implemented in %s: fetch_ticket().", self.__class__.__name__)
 
-    def start_work_on_ticket(self, ticket, url):
+    def start_work_on_ticket(self, ticket):
         """
         Claim the ownership of the ticket and mark it that work has been started.
         """
@@ -346,6 +347,57 @@ class TicketingByVSTS(TicketingMixin):
         return None
 
 
-class TicketingByBitbucket(TicketingMixin):
-    pass
+class TicketingByAtlassian(TicketingMixin):
 
+    def fetch_ticket(self, cmd, code):
+        data = self._get_ticket(code)
+        ret = Ticket(cmd, code)
+        ret['Owner'] = data['fields']['creator']['name']
+        ret['Title'] = data['fields']['summary']
+        ret['Notes'] = data['fields']['description']
+        return ret
+
+    def start_work_on_ticket(self, ticket):
+        """
+        Assign ticket to myself and look for transition to 'In Progress' and do it if found.
+        """
+        data = {"name": QSettings.TICKETING_USER.split('@')[0]}
+        resp = requests.put(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/assignee', json=data, auth=self._auth())
+        if (resp.status_code != 204):
+            raise QError("Claiming ownership of the ticket failed.")
+        resp = requests.get(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', auth=self._auth())
+        data = resp.json()
+        for tr in data['transitions']:
+            if tr['name'] == 'In Progress':
+                data = {"transition": {"id": tr['id']}}
+                resp = requests.post(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', json=data, auth=self._auth())
+                if (resp.status_code != 204):
+                    raise QError("Setting ticket 'In Progress' state failed.")
+                return
+        raise QError("Cannot find transition called 'In Progress'.")
+
+    def _check(self):
+        """
+        Check that all necessary settings are set.
+        """
+        if not QSettings.ATLASSIAN_URL:
+            raise QError("Base URL for Atlassian ATLASSIAN_URL is not set.")
+        if not QSettings.TICKETING_USER:
+            raise QError("User for Atlassian TICKETING_USER is not set.")
+        if not QSettings.TICKETING_PASSWORD:
+            raise QError("Password for Atlassian TICKETING_PASSWORD is not set.")
+
+    def _auth(self):
+        """
+        Authentication parameter.
+        """
+        return (QSettings.TICKETING_USER, QSettings.TICKETING_PASSWORD)
+
+    def _get_ticket(self, code):
+        """
+        Fetch the ticket data for the given ticket code.
+        """
+        self._check()
+        auth = (QSettings.TICKETING_USER, QSettings.TICKETING_PASSWORD)
+        resp = requests.get(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + code, auth=self._auth())
+        return resp.json()

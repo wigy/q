@@ -27,6 +27,8 @@ class QSettings:
     APPDIR = None
     # Path to the settings (filled automatically).
     APPSETTINGS = None
+    # Base url for the JIRA tickets.
+    ATLASSIAN_URL = None
     # Which branch is used by default as a base for new features.
     BASE_BRANCH = 'master'
     # New branch name patterb. %c ticket code, %u user, %t title in lower case underscored
