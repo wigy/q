@@ -219,7 +219,7 @@ class ManualTicketing(TicketingMixin):
         return None
 
 
-class VSTSTicketing(TicketingMixin):
+class TicketingByVSTS(TicketingMixin):
     """
     Ticketing implementation for Visual Studio Team Services.
 

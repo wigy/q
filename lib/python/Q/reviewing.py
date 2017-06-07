@@ -305,7 +305,7 @@ class ReviewByVSTS(ReviewMixin):
     def review_start(self, ticket, file):
 
         if not self._vsts_query:
-            raise QError("When using ReviewByVSTS, also VSTSTicketing must be in user.")
+            raise QError("When using ReviewByVSTS, also TicketingByVSTS must be in user.")
 
 # TODO: Enable once this is working
 #

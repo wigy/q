@@ -8,7 +8,7 @@ from building import NoBuild
 from reviewing import ReviewByReviewBoard, ReviewByGerrit, ReviewByVSTS, NoReview
 from testing import TestingByNose, TestingByShellCommands
 from database import DatabaseByDjango
-from ticketing import TicketingByTrac, ManualTicketing, VSTSTicketing
+from ticketing import TicketingByTrac, ManualTicketing, TicketingByVSTS
 from releasing import NoReleasing, ReleasingByGerrit
 from command import Command
 
