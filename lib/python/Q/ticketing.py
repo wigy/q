@@ -344,3 +344,8 @@ class TicketingByVSTS(TicketingMixin):
             url = url.replace('%c', str(ticket.code))
             return url
         return None
+
+
+class TicketingByBitbucket(TicketingMixin):
+    pass
+

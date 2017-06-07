@@ -8,7 +8,7 @@ from building import NoBuild
 from reviewing import ReviewByReviewBoard, ReviewByGerrit, ReviewByVSTS, NoReview
 from testing import TestingByNose, TestingByShellCommands
 from database import DatabaseByDjango
-from ticketing import TicketingByTrac, ManualTicketing, TicketingByVSTS
+from ticketing import TicketingByTrac, ManualTicketing, TicketingByVSTS, TicketingByBitbucket
 from releasing import NoReleasing, ReleasingByGerrit
 from command import Command
 
@@ -54,7 +54,7 @@ class QProject:
     @classmethod
     def create(cls, settings):
         project_path = os.path.dirname(settings.APPSETTINGS) + '/.q.project.py'
-        if not os.path.exists(project_path):
+        if not os.path.exists(project_path) or os.path.getmtime(project_path) < os.path.getmtime(settings.APPSETTINGS):
             # TODO: Add mixing classes based on configuration.
             # TODO: Crash if no APP_TICKET_CLASS is not set.
             definition = """#
@@ -73,5 +73,9 @@ class Project(QProject, APP_TICKETING, APP_RELEASING, APP_REVIEWING, APP_BUILDIN
             f.write(definition)
             f.close()
         content = {}
-        exec(open(project_path).read(), globals())
+        try:
+            exec(open(project_path).read(), globals())
+        except NameError as err:
+            raise QError("Invalid configuration: %r.", err)
+
         return Project()
