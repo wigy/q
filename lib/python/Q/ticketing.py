@@ -398,6 +398,5 @@ class TicketingByAtlassian(TicketingMixin):
         Fetch the ticket data for the given ticket code.
         """
         self._check()
-        auth = (QSettings.TICKETING_USER, QSettings.TICKETING_PASSWORD)
         resp = requests.get(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + code, auth=self._auth())
         return resp.json()
