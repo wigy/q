@@ -31,13 +31,14 @@ class Q:
     BRANCH = MAGENTA
     COMMAND = GREEN
     URL = CYAN
+    VAR = CYAN
+    FILE = CYAN
     MARKER = RED
     MARK = MARKER+"<=="+END
     ERROR = RED
     NOTE = RED
     USER = GRAY
     USER_ME = WHITE
-    URL = CYAN
 
     prev_channel = None
     settings_loaded = False
@@ -80,6 +81,8 @@ class Q:
                 if len(argv) > 0 and argv[0] in ['help', 'settings']:
                     self.project = QProject()
                 else:
+                    if QSettings.APPSETTINGS:
+                        raise QError("Project name is not defined. Please define " + Q.VAR + "APP" + Q.ERROR + " in " + Q.FILE + QSettings.APPSETTINGS + Q.ERROR + ".")
                     raise QError("Project is not defined. Do you have settings file '.q' created?\nUse " + Q.COMMAND + "q settings save" + Q.ERROR + " to create new settings file template.")
             self.project.parse(*argv)
         except QError as e:
