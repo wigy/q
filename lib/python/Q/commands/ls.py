@@ -3,6 +3,7 @@ from ..error import QError
 from ..settings import QSettings
 from ..command import Command
 from ..helper import Git
+from ..ticket import Ticket
 
 class CommandLs(Command):
     """
@@ -21,7 +22,7 @@ class CommandLs(Command):
         changed = ""
         if current and Git().has_changes():
             changed = " *MODIFIED*"
-        codes = self.ticket.all_codes()
+        codes = Ticket.all_codes()
         codes.sort(reverse = True)
         # Run separate refresh round to get prints out of the listing.
         for code in codes:

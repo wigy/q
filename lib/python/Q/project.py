@@ -11,6 +11,7 @@ from database import DatabaseByDjango
 from ticketing import TicketingByTrac, ManualTicketing, TicketingByVSTS, TicketingByAtlassian
 from releasing import NoReleasing, ReleasingByGerrit
 from command import Command
+from ticket import Ticket
 
 
 class QProject:
@@ -20,10 +21,19 @@ class QProject:
 
     def parse(self, *argv):
         if len(argv):
-            if len(argv) == 1 and re.match(QSettings.TICKET_NUMBER_REGEX, argv[0]):
+            arg0 = argv[0]
+            # Match numbers anyway even if they are not ticket codes exactly.
+            if re.match('[0-9]+', arg0) and not re.match(QSettings.TICKET_NUMBER_REGEX, arg0):
+                for code in Ticket.all_codes():
+                    match = re.match('.*?([0-9]+).*', code)
+                    if match:
+                        if match.group(1) == arg0:
+                            arg0 = code
+                            break
+            if len(argv) == 1 and re.match(QSettings.TICKET_NUMBER_REGEX, arg0):
                 cmd = 'go'
             else:
-                cmd = argv[0]
+                cmd = arg0
                 argv = argv[1:]
         else:
             cmd = 'ls'

@@ -44,7 +44,6 @@ class Command:
         for arg in argv:
             if arg in self.param_aliases:
                 arg = self.param_aliases[arg]
-
             if (re.match(QSettings.TICKET_NUMBER_REGEX, arg)
                     and not self.args
                     and not self.opts):

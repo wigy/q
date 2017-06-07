@@ -296,18 +296,19 @@ class Ticket:
         if g:
             return g.group(1)
 
-    def all_codes(self):
+    @classmethod
+    def all_codes(cls):
         """
         Get the list of all codes for tickets found.
         """
         if not QSettings.WORKDIR:
             raise QError("Ticket storage directory WORKDIR is not set.")
         ret = []
-        if not os.path.isdir(self.root_path):
+        if not os.path.isdir(QSettings.WORKDIR):
             self.wr("Creating ticket directory '%s'.", self.root_path, channel="Initialize")
-            mkpath(self.root_path)
-        for p in os.listdir(self.root_path):
-            if os.path.isfile(self.root_path+"/"+p+"/README"):
+            mkpath(QSettings.WORKDIR)
+        for p in os.listdir(QSettings.WORKDIR):
+            if os.path.isfile(QSettings.WORKDIR+"/"+p+"/README"):
                 ret.append(p)
         return ret
 
