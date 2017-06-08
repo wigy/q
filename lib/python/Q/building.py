@@ -96,6 +96,14 @@ class BuildByBamboo(BuildMixin):
             return str(success) + '/' + str(total)
         return 'Success'
 
+    def build_url(self, ticket):
+        if ticket['Build ID']:
+            builds = json.loads(ticket['Build ID'])
+            ret = []
+            for plan in builds.keys():
+                ret.append(QSettings.BAMBOO_URL + 'browse/%s-%d' % (plan, builds[plan]))
+            return "\n".join(ret)
+
     def _build_auth(self):
         """
         Authentication parameter.
