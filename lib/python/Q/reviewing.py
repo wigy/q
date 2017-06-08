@@ -402,3 +402,14 @@ class ReviewByBitbucket(ReviewMixin):
     def review_url(self, review_id):
         repo = "%s/%s" % (QSettings.BITBUCKET_PROJECT, QSettings.BITBUCKET_REPO)
         return 'https://bitbucket.org/%s/pull-requests/%s' % (repo, review_id)
+
+    def review_status(self, review_id):
+        repo = "%s/%s" % (QSettings.BITBUCKET_PROJECT, QSettings.BITBUCKET_REPO)
+        url = 'https://bitbucket.org/api/2.0/repositories/%s/pullrequests/%s' % (repo, review_id)
+        resp = requests.get(url, auth=self._review_auth())
+        data = resp.json()
+        state = data['state']
+        if state == 'OPEN':
+            return 'Pending'
+        else:
+            raise QError('Unknown status of review: %r.' % state)

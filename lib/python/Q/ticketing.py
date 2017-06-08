@@ -73,7 +73,7 @@ class TicketingMixin:
         """
         raise QError("Not implemented in %s: done_work_on_ticket().", self.__class__.__name__)
 
-    def start_review_on_ticket(self, ticket):
+    def start_review_on_ticket(self, ticket, url):
         """
         Indicate that ticket is waiting for review.
         """
@@ -369,16 +369,18 @@ class TicketingByAtlassian(TicketingMixin):
         resp = requests.put(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/assignee', json=data, auth=self._ticketing_auth())
         if (resp.status_code != 204):
             raise QError("Claiming ownership of the ticket failed.")
+        self._set_ticket_status('In Progress')
+
+    def start_review_on_ticket(self, ticket, url):
+        self._set_ticket_status('In Review')
+
+    def _ticketing_transition(self, ticket, name):
         resp = requests.get(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', auth=self._ticketing_auth())
         data = resp.json()
         for tr in data['transitions']:
-            if tr['name'] == 'In Progress':
-                data = {"transition": {"id": tr['id']}}
-                resp = requests.post(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', json=data, auth=self._ticketing_auth())
-                if (resp.status_code != 204):
-                    raise QError("Setting ticket 'In Progress' state failed.")
-                return
-        raise QError("Cannot find transition called 'In Progress'.")
+            if tr['name'].upper() == name.upper():
+                return tr['id']
+        raise QError("Cannot find transition called %r." % name)
 
     def _ticketing_check(self):
         """
@@ -404,3 +406,10 @@ class TicketingByAtlassian(TicketingMixin):
         self._ticketing_check()
         resp = requests.get(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + code, auth=self._ticketing_auth())
         return resp.json()
+
+    def _set_ticket_status(self, ticket, status):
+        id = self._ticketing_transition(ticket, status)
+        data = {"transition": {"id": id}}
+        resp = requests.post(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', json=data, auth=self._ticketing_auth())
+        if (resp.status_code != 204):
+            raise QError("Setting ticket %r state failed." % status)
