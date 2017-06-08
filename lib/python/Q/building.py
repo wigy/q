@@ -8,6 +8,8 @@ import readline
 import glob
 import time
 import shutil
+import requests
+import json
 
 from settings import QSettings
 from error import QError
@@ -57,3 +59,49 @@ class NoBuild(BuildMixin):
         Fetch the build status 'Pending', 'Success' or 'Fail'.
         """
         return 'Success'
+
+class BuildByBamboo(BuildMixin):
+
+    def build_start(self, ticket, gitid):
+        if not QSettings.BAMBOO_URL:
+            raise QError("Must define BAMBOO_URL to build.")
+        if not QSettings.BAMBOO_PLANS:
+            raise QError("Must define BAMBOO_PLANS to build.")
+        ret = {}
+        for plan in QSettings.BAMBOO_PLANS.split("\n"):
+            url = QSettings.BAMBOO_URL + "rest/api/latest/queue/%s.json?customRevision=%s" % (plan, gitid)
+            resp = requests.post(url, auth=self._build_auth(), verify=False)
+            data = resp.json()
+            ret[data['planKey']] = data['buildNumber']
+        return json.dumps(ret)
+
+    def build_status(self, ticket):
+        builds = json.loads(ticket['Build ID'])
+        success = 0
+        fail = 0
+        total = 0
+        for plan in builds.keys():
+            total += 1
+            url = QSettings.BAMBOO_URL + "rest/api/latest/result/%s/%s.json" % (plan, builds[plan])
+            resp = requests.get(url, auth=self._build_auth(), verify=False)
+            data = resp.json()
+            state = data['state']
+            if state == 'Successful':
+                success += 1
+            else:
+                raise QError('Unknown status of build: %r.' % state)
+        if fail:
+            return 'Fail'
+        if success < total:
+            return str(success) + '/' + str(total)
+        return 'Success'
+
+    def _build_auth(self):
+        """
+        Authentication parameter.
+        """
+        if not QSettings.BAMBOO_USER:
+            raise QError("User for Bamboo BAMBOO_USER is not set.")
+        if not QSettings.BAMBOO_PASSWORD:
+            raise QError("Password for Bamboo BAMBOO_PASSWORD is not set.")
+        return (QSettings.BAMBOO_USER, QSettings.BAMBOO_PASSWORD)

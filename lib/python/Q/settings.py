@@ -29,6 +29,14 @@ class QSettings:
     APPSETTINGS = None
     # Base url for the JIRA tickets.
     ATLASSIAN_URL = None
+    # Password for the Bamboo.
+    BAMBOO_PASSWORD = None
+    # One or more Bamboo plan codes to launch build.
+    BAMBOO_PLANS = None
+    # Base url of the Bamboo server.
+    BAMBOO_URL = None
+    # Username for the Bamboo.
+    BAMBOO_USER = None
     # Which branch is used by default as a base for new features.
     BASE_BRANCH = 'master'
     # New branch name patterb. %c ticket code, %u user, %t title in lower case underscored

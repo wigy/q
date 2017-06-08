@@ -4,7 +4,7 @@ import re
 
 from error import QError
 from settings import QSettings
-from building import NoBuild
+from building import NoBuild, BuildByBamboo
 from reviewing import ReviewByReviewBoard, ReviewByGerrit, ReviewByVSTS, NoReview
 from testing import TestingByNose, TestingByShellCommands
 from database import DatabaseByDjango

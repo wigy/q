@@ -357,46 +357,50 @@ class TicketingByAtlassian(TicketingMixin):
         ret['Notes'] = data['fields']['description']
         return ret
 
+    def ticket_url(self, ticket):
+        self._ticketing_check()
+        return QSettings.ATLASSIAN_URL + 'browse/' + ticket.code
+
     def start_work_on_ticket(self, ticket):
         """
         Assign ticket to myself and look for transition to 'In Progress' and do it if found.
         """
         data = {"name": QSettings.TICKETING_USER.split('@')[0]}
-        resp = requests.put(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/assignee', json=data, auth=self._auth())
+        resp = requests.put(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/assignee', json=data, auth=self._ticketing_auth())
         if (resp.status_code != 204):
             raise QError("Claiming ownership of the ticket failed.")
-        resp = requests.get(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', auth=self._auth())
+        resp = requests.get(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', auth=self._ticketing_auth())
         data = resp.json()
         for tr in data['transitions']:
             if tr['name'] == 'In Progress':
                 data = {"transition": {"id": tr['id']}}
-                resp = requests.post(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', json=data, auth=self._auth())
+                resp = requests.post(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', json=data, auth=self._ticketing_auth())
                 if (resp.status_code != 204):
                     raise QError("Setting ticket 'In Progress' state failed.")
                 return
         raise QError("Cannot find transition called 'In Progress'.")
 
-    def _check(self):
+    def _ticketing_check(self):
         """
         Check that all necessary settings are set.
         """
         if not QSettings.ATLASSIAN_URL:
             raise QError("Base URL for Atlassian ATLASSIAN_URL is not set.")
+
+    def _ticketing_auth(self):
+        """
+        Authentication parameter.
+        """
         if not QSettings.TICKETING_USER:
             raise QError("User for Atlassian TICKETING_USER is not set.")
         if not QSettings.TICKETING_PASSWORD:
             raise QError("Password for Atlassian TICKETING_PASSWORD is not set.")
-
-    def _auth(self):
-        """
-        Authentication parameter.
-        """
         return (QSettings.TICKETING_USER, QSettings.TICKETING_PASSWORD)
 
     def _get_ticket(self, code):
         """
         Fetch the ticket data for the given ticket code.
         """
-        self._check()
-        resp = requests.get(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + code, auth=self._auth())
+        self._ticketing_check()
+        resp = requests.get(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + code, auth=self._ticketing_auth())
         return resp.json()
