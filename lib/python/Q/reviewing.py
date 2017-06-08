@@ -1,7 +1,7 @@
-# TODO: Rename this file 'reviewing.py'
 import os
 import re
 import json
+import requests
 
 from settings import QSettings
 from error import QError
@@ -349,3 +349,56 @@ class ReviewByVSTS(ReviewMixin):
         Update the existing review. Push made earlier before calling this is enough to update.
         """
         pass
+
+
+class ReviewByBitbucket(ReviewMixin):
+    """
+    Create pull request to bitbucket.
+    """
+
+    def review_start(self, ticket, file):
+        self._review_check()
+        repo = "%s/%s" % (QSettings.BITBUCKET_PROJECT, QSettings.BITBUCKET_REPO)
+        url = 'https://bitbucket.org/api/2.0/repositories/%s/pullrequests/' % repo
+        out = {
+            "title": self.get_review_title(ticket),
+            "description": "",
+            "source": {
+                "branch": {
+                    "repository": repo,
+                    "name": ticket['Branch']
+                }
+            },
+            "destination": {
+                "branch": {
+                    "name": QSettings.BITBUCKET_PR_TARGET
+                }
+            },
+            "close_source_branch": False
+        }
+        resp = requests.post(url, json=out, auth=self._review_auth())
+        data = resp.json()
+        diff = data['links']['diff']['href']
+        return int(re.match('.*/pullrequests/(.*)/diff', diff).groups()[0])
+
+    def _review_auth(self):
+        if not QSettings.BITBUCKET_USER:
+            raise QError("User for Bamboo BITBUCKET_USER is not set.")
+        if not QSettings.BITBUCKET_PASSWORD:
+            raise QError("Password for Bamboo BITBUCKET_PASSWORD is not set.")
+        return (QSettings.BITBUCKET_USER, QSettings.BITBUCKET_PASSWORD)
+
+    def _review_check(self):
+        """
+        Check that all necessary settings are set.
+        """
+        if not QSettings.BITBUCKET_PROJECT:
+            raise QError("Project name BITBUCKET_PROJECT is not set.")
+        if not QSettings.BITBUCKET_REPO:
+            raise QError("Repository name BITBUCKET_REPO is not set.")
+        if not QSettings.BITBUCKET_PR_TARGET:
+            raise QError("Bitbucket pull request target BITBUCKET_PR_TARGET is not set.")
+
+    def review_url(self, review_id):
+        repo = "%s/%s" % (QSettings.BITBUCKET_PROJECT, QSettings.BITBUCKET_REPO)
+        return 'https://bitbucket.org/%s/pull-requests/%s' % (repo, review_id)

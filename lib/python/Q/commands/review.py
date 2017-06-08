@@ -73,13 +73,11 @@ class CommandReview(AutoGoCommand):
             raise QError("Ticket has already review %r pending.", self.ticket['Review ID'])
         if not self.opts.get('force') and QSettings.REVIEW_NEEDS_BUILD and self.ticket['Build ID'] is None:
             raise QError("Cannot create review before you have build on-going.")
-# TODO: Enable
-#        Q('update')
-#        Q('publish')
+        Q('update')
+        Q('publish')
         Q('my','revert')
         file = self._make_diff()
         rid = self.app.review_start(self.ticket, file)
-        return # TODO: Remove
         if rid is None:
             raise QError("Launching the review failed.")
         self.ticket.set_status('Reviewing')

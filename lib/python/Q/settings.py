@@ -39,6 +39,16 @@ class QSettings:
     BAMBOO_USER = None
     # Which branch is used by default as a base for new features.
     BASE_BRANCH = 'master'
+    # Name of the project in the Bitbucket (https://bitbucket.org/PROJECT/REPO/).
+    BITBUCKET_PROJECT = None
+    # Name of the repository in the Bitbucket (https://bitbucket.org/PROJECT/REPO/).
+    BITBUCKET_REPO = None
+    # User name in the Bitbucket.
+    BITBUCKET_USER = None
+    # Password in the Bitbucket.
+    BITBUCKET_PASSWORD = None
+    # Branch to create pull requests against.
+    BITBUCKET_PR_TARGET = 'master'
     # New branch name patterb. %c ticket code, %u user, %t title in lower case underscored
     BRANCH_NAMING = '%c_%u_%t'
     # Format of the commit message: %c ticket code, %m message
