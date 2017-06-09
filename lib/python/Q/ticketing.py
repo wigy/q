@@ -369,10 +369,10 @@ class TicketingByAtlassian(TicketingMixin):
         resp = requests.put(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/assignee', json=data, auth=self._ticketing_auth())
         if (resp.status_code != 204):
             raise QError("Claiming ownership of the ticket failed.")
-        self._set_ticket_status('In Progress')
+        self._set_ticket_status(ticket, 'In Progress')
 
     def start_review_on_ticket(self, ticket, url):
-        self._set_ticket_status('In Review')
+        self._set_ticket_status(ticket, 'In Review')
 
     def _ticketing_transition(self, ticket, name):
         resp = requests.get(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', auth=self._ticketing_auth())
