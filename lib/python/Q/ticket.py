@@ -301,11 +301,12 @@ class Ticket:
         """
         Get the list of all codes for tickets found.
         """
+        from q import Q
         if not QSettings.WORKDIR:
             raise QError("Ticket storage directory WORKDIR is not set.")
         ret = []
         if not os.path.isdir(QSettings.WORKDIR):
-            self.wr("Creating ticket directory '%s'.", self.root_path, channel="Initialize")
+            Q.wr("Initialize", "Creating ticket directory '%s'.", QSettings.WORKDIR)
             mkpath(QSettings.WORKDIR)
         for p in os.listdir(QSettings.WORKDIR):
             if os.path.isfile(QSettings.WORKDIR+"/"+p+"/README"):
