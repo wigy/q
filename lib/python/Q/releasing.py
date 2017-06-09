@@ -36,3 +36,11 @@ class ReleasingByGerrit(ReleasingMixin):
 
     def release_can_be_skipped(self, ticket):
         return False
+
+class ReleasingByBamboo(ReleasingMixin):
+    """
+    Bamboo version of relasing.
+    """
+
+    def release_can_be_skipped(self, ticket):
+        return False
