@@ -130,10 +130,11 @@ class Command:
         from commands.find import CommandFind
         from commands.base import CommandBase
         from commands.open import CommandOpen
+        from commands.url import CommandUrl
 
         for name in ['Destroy', 'Help', 'Ls', 'Show', 'Start', 'Go', 'My', 'Diff', 'Commit', 'Settings', 'Publish',
                      'Update', 'Edit', 'Backport', 'Done', 'Build', 'Review', 'Release', 'Create', 'Reopen',
-                     'Cancel', 'Test', 'Find', 'Base', 'Open']:
+                     'Cancel', 'Test', 'Find', 'Base', 'Open', 'Url']:
             ret[name.lower()] = eval("Command" + name)
 
         return ret
@@ -301,32 +302,3 @@ class CommandDb(AutoLoadCommand):
 
         else:
             raise QError("Invalid DB sub-command '%s'.", self.args[0])
-
-
-class CommandUrl(AutoGoCommand):
-    """
-    Update URL and user information for the ticket.
-    """
-    param_aliases = {
-                     'a' : 'add',
-                     }
-
-    def run(self):
-        """
-        usage: q url [<code>] [<user>|add] <debug_url>...
-        """
-        from q import Q
-        if len(self.args) == 0:
-            self.wr(Q.TITLE+'User:'+Q.END)
-            self.wr(self.ticket['User'])
-            self.wr(Q.TITLE+'URL:'+Q.END)
-            self.wr(self.ticket['URL'])
-            return
-        if len(self.args) > 1:
-            if self.args[0] == 'add':
-                self.args = [self.ticket['URL']] + self.args[1:]
-            else:
-                self.ticket['User'] = self.args[0]
-                self.args = self.args[1:]
-        self.ticket['URL'] = self.args
-        self.ticket.save()
