@@ -20,6 +20,7 @@ class QProject:
     """
 
     def parse(self, *argv):
+        # TODO: Refactor whole argument parsing to have cleaner code. Maybe get rid of AutoLoad etc. classes.
         _argv = list(argv)
         if len(argv):
             arg0 = argv[0]

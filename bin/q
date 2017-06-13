@@ -3,8 +3,7 @@
 
 # TODO: Log command showing logs only from the base version until now
 # TODO: Reset command to track down all non-private changes and re-checkout / remove those files.
-# TODO: Description field to contain copy of ticket text. (Or fetch on demand automatically?)
-# TODO: BUG Cannot jump to ticket with 'q q' if in relaese-tag branch for example.
+# TODO: BUG Cannot jump to ticket with 'q q' if in release-tag branch for example.
 # TODO: BUG Open doesn't check for file existence. It could skip deleted files.
 # TODO: Search functionality (basicly rgrep on ticket folder with some intelligent interpretation)
 # TODO: Support for given list of files to be saved/loaded on leave/enter (like local_settings.py)
