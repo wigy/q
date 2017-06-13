@@ -88,6 +88,10 @@ class BuildByBamboo(BuildMixin):
             state = data['state']
             if state == 'Successful':
                 success += 1
+            elif state == 'Unknown':
+                pass
+            elif state == 'Failed':
+                fail += 1
             else:
                 raise QError('Unknown status of build: %r.' % state)
         if fail:

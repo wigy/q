@@ -128,10 +128,11 @@ class Command:
         from commands.update import CommandUpdate
         from commands.test import CommandTest
         from commands.find import CommandFind
+        from commands.base import CommandBase
 
         for name in ['Destroy', 'Help', 'Ls', 'Show', 'Start', 'Go', 'My', 'Diff', 'Commit', 'Settings', 'Publish',
                      'Update', 'Edit', 'Backport', 'Done', 'Build', 'Review', 'Release', 'Create', 'Reopen',
-                     'Cancel', 'Test', 'Find']:
+                     'Cancel', 'Test', 'Find', 'Base']:
             ret[name.lower()] = eval("Command" + name)
 
         return ret

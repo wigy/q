@@ -348,8 +348,8 @@ class Ticket:
             self.cmd.app.change_db(db)
             # TODO: Restart servers
         Git()('checkout '+self.branch_name())
-        for line in Git()('stash list', get_output=True).strip().split("\n"):
-            hit = re.match(r'(stash@\{.+\}).*QuickAutoStash_(\d+)',line.strip())
+        for line in Git()('stash list', get_output=True, no_echo=True).strip().split("\n"):
+            hit = re.match(r'(stash@\{.+\}).*QuickAutoStash_(.+)',line.strip())
             if hit and hit.group(2) == self.code:
                 Git()('stash pop '+hit.group(1))
         if QSettings.USE_SUBMODULES:

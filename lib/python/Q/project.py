@@ -20,6 +20,7 @@ class QProject:
     """
 
     def parse(self, *argv):
+        _argv = list(argv)
         if len(argv):
             arg0 = argv[0]
             # Match numbers anyway even if they are not ticket codes exactly.
@@ -29,20 +30,21 @@ class QProject:
                     if match:
                         if match.group(1) == arg0:
                             arg0 = code
+                            _argv[0] = code
                             break
             if len(argv) == 1 and re.match(QSettings.TICKET_NUMBER_REGEX, arg0):
                 cmd = 'go'
             else:
                 cmd = arg0
-                argv = argv[1:]
+                _argv = argv[1:]
         else:
             cmd = 'ls'
-            argv = ['--short']
+            _argv = ['--short']
         constructor = Command.find(cmd)
         if constructor is None:
             raise QError("Command '%s' not found.", cmd)
         self.cmd = constructor(self)
-        self.cmd.parse(*argv)
+        self.cmd.parse(*_argv)
 
 
     def set_path(self):

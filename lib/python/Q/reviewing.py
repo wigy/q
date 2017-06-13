@@ -411,5 +411,9 @@ class ReviewByBitbucket(ReviewMixin):
         state = data['state']
         if state == 'OPEN':
             return 'Pending'
+        elif state == 'DECLINED':
+            return 'Fail'
+        elif state == 'MERGED':
+            return 'Success'
         else:
             raise QError('Unknown status of review: %r.' % state)

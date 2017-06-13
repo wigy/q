@@ -29,7 +29,8 @@ class CommandCreate(Command):
         # Create new ticket.
         self.ticket=Ticket(self)
         self.ticket['Title'] = title
-        self.ticket['Notes'] = Edit().temp()
+#        self.ticket['Notes'] = Edit().temp()
+        self.ticket['Notes'] = 'Cannot launch virta-main with virta-white due to port conflict.'
         if self.ticket['Notes'].strip() == '':
             raise QError("Canceled")
         self.ticket['Owner'] = None
