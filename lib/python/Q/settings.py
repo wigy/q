@@ -62,7 +62,7 @@ class QSettings:
     # Name of the database.
     DB_NAME = None
     # Which editor to use for editing text files.
-    EDITOR = 'gedit'
+    EDITOR = 'code'
     # User account in git.
     GIT_USER = None
     # Name of the remote used for storing feature branches.
@@ -72,7 +72,7 @@ class QSettings:
     # URL for grunt builder: %c is build id.
     GRUNT_BUILD_URL = None
     # Name of the IDE for code editing.
-    IDE = 'eclipse'
+    IDE = 'code'
     # Name of the branch we hang around, when there is no ticket selected.
     LOBBY_BRANCH = 'master'
     # If set, do not do any network queries.

@@ -32,7 +32,7 @@ class QProject:
                             arg0 = code
                             _argv[0] = code
                             break
-            if len(argv) == 1 and re.match(QSettings.TICKET_NUMBER_REGEX, arg0):
+            if len(argv) == 1 and (arg0 == '0' or re.match(QSettings.TICKET_NUMBER_REGEX, arg0)):
                 cmd = 'go'
             else:
                 cmd = arg0

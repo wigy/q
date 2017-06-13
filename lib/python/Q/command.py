@@ -129,10 +129,11 @@ class Command:
         from commands.test import CommandTest
         from commands.find import CommandFind
         from commands.base import CommandBase
+        from commands.open import CommandOpen
 
         for name in ['Destroy', 'Help', 'Ls', 'Show', 'Start', 'Go', 'My', 'Diff', 'Commit', 'Settings', 'Publish',
                      'Update', 'Edit', 'Backport', 'Done', 'Build', 'Review', 'Release', 'Create', 'Reopen',
-                     'Cancel', 'Test', 'Find', 'Base']:
+                     'Cancel', 'Test', 'Find', 'Base', 'Open']:
             ret[name.lower()] = eval("Command" + name)
 
         return ret
@@ -329,21 +330,3 @@ class CommandUrl(AutoGoCommand):
                 self.args = self.args[1:]
         self.ticket['URL'] = self.args
         self.ticket.save()
-
-
-class CommandOpen(AutoLoadCommand):
-    """
-    Open the ticket in editor.
-    """
-    def run(self):
-        """
-        usage: q open [<code>]
-        """
-        if not self.ticket['Files']:
-            self.wr("No Files defined.")
-        else:
-            files = []
-            for file in self.ticket.list('Files'):
-                files.append(QSettings.APPDIR + "/" + file)
-            Edit()(*files)
-            # TODO: Add browser opening an URL.
