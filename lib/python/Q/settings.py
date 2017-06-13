@@ -29,6 +29,12 @@ class QSettings:
     APPSETTINGS = None
     # Base url for the JIRA tickets.
     ATLASSIAN_URL = None
+    # Name of the status for tickes in progress.
+    ATLASSIAN_STATUS_WORKING = 'In Progress'
+    # Name of the status for tickes in review.
+    ATLASSIAN_STATUS_REVIEWING = 'In Review'
+    # Name of the status for done tickes.
+    ATLASSIAN_STATUS_DONE = 'Done'
     # Password for the Bamboo.
     BAMBOO_PASSWORD = None
     # One or more Bamboo plan codes to launch build.
