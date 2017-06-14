@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+import os
 from ..command import AutoGoCommand
 from ..settings import QSettings
 from ..helper import Edit
@@ -17,6 +18,10 @@ class CommandOpen(AutoGoCommand):
         else:
             files = []
             for file in self.ticket.list('Files'):
-                files.append(QSettings.APPDIR + "/" + file)
+                path = QSettings.APPDIR + "/" + file
+                if os.path.exists(path):
+                    files.append(path)
+            if not len(files):
+                self.wr("No editabe files found.")
             Edit()(*files)
             # TODO: Add browser opening an URL.
