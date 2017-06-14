@@ -310,7 +310,7 @@ class TicketingByVSTS(TicketingMixin):
         if ticket['Ticket Info'] not in ['Task']:
             close_parent = False
         else:
-            # TODO: refactor to parent() and children() functions once sure this works like this
+            # TODO: VSTS: Refactor to parent() and children() functions once sure this works like this.
             data = self._vsts_query('wit/workitems/' + ticket.code + '?$expand=all')
             for link in data.get('relations'):
                 rel = link['rel']
@@ -320,7 +320,7 @@ class TicketingByVSTS(TicketingMixin):
                     if parent['fields']['System.WorkItemType'] in ['Bug', 'Product Backlog Item']:
                         for child_link in parent.get('relations'):
                             if child_link['rel'] in ['System.LinkTypes.Hierarchy-Forward']:
-                                # TODO: Here we could skip the task we are closing
+                                # TODO: VSTS: Here we could skip the task we are closing.
                                 if self._vsts_query(child_link['url'])['fields']['System.State'] not in ['Done']:
                                     close_parent = False
                                     break
@@ -332,7 +332,7 @@ class TicketingByVSTS(TicketingMixin):
         pass
 
     def change_text_of_ticket(self, ticket):
-        # TODO: Should check existing value and use 'add' as 'op' if None.
+        # TODO: VSTS: Should check existing value and use 'add' as 'op' if None.
         if ticket['Ticket Info'] == 'Bug':
             patch = [{'op': 'replace', 'path': '/fields/Microsoft.VSTS.TCM.ReproSteps', 'value': ticket['Notes'].replace("\n", "<br>")}]
         else:

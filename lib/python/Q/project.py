@@ -54,8 +54,8 @@ class QProject:
     def create(cls, settings):
         project_path = os.path.dirname(settings.APPSETTINGS) + '/.q.project.py'
         if not os.path.exists(project_path) or os.path.getmtime(project_path) < os.path.getmtime(settings.APPSETTINGS):
-            # TODO: Add mixing classes based on configuration.
-            # TODO: Crash if no APP_TICKET_CLASS is not set.
+            if not settings.APP_TICKETING:
+                raise QError("Ticketing mixing APP_TICKETING must be set in configuration.")
             definition = """#
 # Automatically generated from `.q`.
 # Just delete this if you want to regenerate it.
