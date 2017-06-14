@@ -78,6 +78,12 @@ class TicketingMixin:
         """
         raise QError("Not implemented in %s: cancel_work_on_ticket().", self.__class__.__name__)
 
+    def reopen_work_on_ticket(self, ticket):
+        """
+        Go back on working into the ticket that has been already canceled or done.
+        """
+        raise QError("Not implemented in %s: reopen_work_on_ticket().", self.__class__.__name__)
+
     def start_review_on_ticket(self, ticket, url):
         """
         Indicate that ticket is waiting for review.
@@ -384,6 +390,9 @@ class TicketingByAtlassian(TicketingMixin):
 
     def cancel_work_on_ticket(self, ticket):
         self._set_ticket_status(ticket, QSettings.ATLASSIAN_STATUS_AVAILABLE)
+
+    def reopen_work_on_ticket(self, ticket):
+        self._set_ticket_status(ticket, QSettings.ATLASSIAN_STATUS_WORKING)
 
     def _ticketing_transition(self, ticket, name):
         resp = requests.get(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', auth=self._ticketing_auth())

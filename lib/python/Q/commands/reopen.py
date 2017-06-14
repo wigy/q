@@ -13,6 +13,7 @@ class CommandReopen(AutoLoadCommand):
         usage: q reopen [<code>]
         """
         from ..q import Q
+        self.app.reopen_work_on_ticket(self.ticket)
         self.ticket.delete('Finished')
         self.ticket.delete('Build Result')
         self.ticket.delete('Build ID')
@@ -20,5 +21,4 @@ class CommandReopen(AutoLoadCommand):
         self.ticket.delete('Review ID')
         self.ticket.set_status("Working")
         self.ticket.save()
-        # TODO: Update ticketing system
-#        Q('go', self.ticket.code)
+        Q('go', self.ticket.code)
