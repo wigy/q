@@ -13,7 +13,7 @@ class CommandCancel(AutoGoCommand):
         """
         usage: q cancel [<code>]
         """
+        self.app.cancel_work_on_ticket(self.ticket)
         self.ticket.set_status("Canceled")
         self.ticket['Finished'] = time.strftime('%Y-%m-%d %H:%M')
         self.ticket.save()
-        # TODO: Update ticketing system

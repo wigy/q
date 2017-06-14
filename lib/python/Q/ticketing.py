@@ -66,12 +66,17 @@ class TicketingMixin:
         """
         raise QError("Not implemented in %s: start_work_on_ticket().", self.__class__.__name__)
 
-
     def done_work_on_ticket(self, ticket):
         """
         Indicate that ticket flow is now complete from the development point of view.
         """
         raise QError("Not implemented in %s: done_work_on_ticket().", self.__class__.__name__)
+
+    def cancel_work_on_ticket(self, ticket):
+        """
+        Give up the ownership of the ticket and mark it that it is still available.
+        """
+        raise QError("Not implemented in %s: cancel_work_on_ticket().", self.__class__.__name__)
 
     def start_review_on_ticket(self, ticket, url):
         """
@@ -377,6 +382,9 @@ class TicketingByAtlassian(TicketingMixin):
     def done_work_on_ticket(self, ticket):
         self._set_ticket_status(ticket, QSettings.ATLASSIAN_STATUS_DONE)
 
+    def cancel_work_on_ticket(self, ticket):
+        self._set_ticket_status(ticket, QSettings.ATLASSIAN_STATUS_AVAILABLE)
+
     def _ticketing_transition(self, ticket, name):
         resp = requests.get(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', auth=self._ticketing_auth())
         data = resp.json()
@@ -411,6 +419,7 @@ class TicketingByAtlassian(TicketingMixin):
         return resp.json()
 
     def _set_ticket_status(self, ticket, status):
+        self.cmd.wr("Setting ticket status of %r to %r.", ticket.code, status)
         id = self._ticketing_transition(ticket, status)
         data = {"transition": {"id": id}}
         resp = requests.post(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', json=data, auth=self._ticketing_auth())

@@ -35,6 +35,8 @@ class QSettings:
     ATLASSIAN_STATUS_REVIEWING = 'In Review'
     # Name of the status for done tickes.
     ATLASSIAN_STATUS_DONE = 'Done'
+    # Name of the status for available tickes.
+    ATLASSIAN_STATUS_AVAILABLE = 'Backlog'
     # Password for the Bamboo.
     BAMBOO_PASSWORD = None
     # One or more Bamboo plan codes to launch build.
