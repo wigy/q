@@ -19,34 +19,20 @@ class QProject:
     Base functionality for querying and executing tasks for the application project.
     """
 
-    def parse(self, *argv):
-        # TODO: Refactor whole argument parsing to have cleaner code. Maybe get rid of AutoLoad etc. classes.
-        _argv = list(argv)
-        if len(argv):
-            arg0 = argv[0]
-            # Match numbers anyway even if they are not ticket codes exactly.
-            if re.match('[0-9]+', arg0) and not re.match(QSettings.TICKET_NUMBER_REGEX, arg0):
-                for code in Ticket.all_codes():
-                    match = re.match('.*?([0-9]+).*', code)
-                    if match:
-                        if match.group(1) == arg0:
-                            arg0 = code
-                            _argv[0] = code
-                            break
-            if len(argv) == 1 and (arg0 == '0' or re.match(QSettings.TICKET_NUMBER_REGEX, arg0)):
-                cmd = 'go'
-            else:
-                cmd = arg0
-                _argv = argv[1:]
-        else:
-            cmd = 'ls'
-            _argv = ['--short']
-        constructor = Command.find(cmd)
+    def parse(self, *_argv):
+        argv = list(_argv)
+        # Handle short-cuts for no arguments and single ticket number argument.
+        if len(argv)==0:
+            argv = ['ls', '--short']
+        elif len(argv)==1 and (re.match('^[0-9]+$', argv[0]) or re.match(QSettings.TICKET_NUMBER_REGEX, argv[0])):
+            argv = ['go', argv[0]]
+        # Find the command and execute it.
+        constructor = Command.find(argv[0])
         if constructor is None:
-            raise QError("Command '%s' not found.", cmd)
+            raise QError("Command '%s' not found.", argv[0])
         self.cmd = constructor(self)
-        self.cmd.parse(*_argv)
-
+        argv = argv[1:]
+        self.cmd.parse(*argv)
 
     def set_path(self):
         """

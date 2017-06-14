@@ -34,6 +34,20 @@ class Command:
         self.app = app
         self.ticket = Ticket(self)
 
+    def _check_for_ticket(self, str):
+        """
+        Helper to check if the string matches ticket code or is short-cut (number part of code) to the existing ticket.
+        """
+        if str == '0':
+            return str
+        for code in Ticket.all_codes():
+            if str == code:
+                return code
+            match = re.match('.*?([0-9]+).*', code)
+            if match:
+                if match.group(1) == str:
+                    return code
+
     def parse(self, *argv):
         """
         Parse options and run the command.
@@ -41,13 +55,15 @@ class Command:
         self.args = []
         self.opts = {}
         code = None
+        # Parse ticket number as first argument.
+        if len(argv):
+            code = self._check_for_ticket(argv[0])
+            if not code is None:
+                argv = argv[1:]
+        # Separate options and arguments.
         for arg in argv:
             if arg in self.param_aliases:
                 arg = self.param_aliases[arg]
-            if (re.match(QSettings.TICKET_NUMBER_REGEX, arg)
-                    and not self.args
-                    and not self.opts):
-                code = arg
             else:
                 opt = re.match('--(\w+)(=(.*))?',arg)
                 if opt:
@@ -58,6 +74,7 @@ class Command:
                         self.opts[opts[0]] = True
                 else:
                     self.args.append(arg)
+        # Run intialize hook and execute command.
         self.init(code)
         self.run()
 
@@ -142,7 +159,7 @@ class Command:
 
 class AutoLoadCommand(Command):
     """
-    A command that automatically loads the current ticket and ticket is required.
+    A command that automatically loads the current ticket and ticket is also always required.
     """
     def init(self, code):
         if code:
@@ -161,7 +178,7 @@ class AutoGoCommand(AutoLoadCommand):
     """
     def init(self, code):
         if not code:
-            AutoLoadCommand.init(self, code)
+            AutoLoadCommand.init(self, None)
             return
         if code != '0' and not self.ticket.exists(code):
             raise QError("No such ticket as #%s." % code)

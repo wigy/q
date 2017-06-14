@@ -71,7 +71,7 @@ class Q:
 
     def parse(self, *argv):
         """
-        Parse flags and extract command and arguments.
+        Set up the project and then parse and run commands.
         """
         try:
             if QSettings.APP:
