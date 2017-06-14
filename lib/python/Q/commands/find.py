@@ -6,6 +6,7 @@ from ..error import QError
 from ..settings import QSettings
 from ..command import Command
 from ..helper import Grep
+from ..ticket import Ticket
 
 
 class CommandFind(Command):
@@ -24,11 +25,14 @@ class CommandFind(Command):
         args = '"' + args.replace('"', '\\"') + '"'
         out = Grep().run("-r", "-l", "-i", args, QSettings.WORKDIR, get_output=True)
         hits = {}
+        codes = Ticket.all_codes()
         for filename in out.split("\n"):
             if filename == '' or filename[-1] == '~':
                 continue
             ticket = filename[len(QSettings.WORKDIR) + 1:]
             ticket = ticket[0:ticket.find('/')]
+            if not ticket in codes:
+                continue
             if ticket not in hits:
                 hits[ticket] = {}
             grep = Grep().run("-A2", "-B2", "-i", args, filename, get_output=True)
