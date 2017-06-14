@@ -1,4 +1,3 @@
-# TODO: Rename this file 'building.py'
 import sys
 import inspect
 import re

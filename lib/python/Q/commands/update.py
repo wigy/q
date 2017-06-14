@@ -18,7 +18,6 @@ class CommandUpdate(AutoGoCommand):
         QSettings.GIT_REMOTE
         from ..q import Q
         Q('my','revert')
-        # TODO: Do we need perhaps separate 'Base Branch' from 'Base' (for diffs).
         if Git().has_changes():
             raise QError("Need to commit changes first.")
         old = Git().current_branch_name()

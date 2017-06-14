@@ -160,7 +160,7 @@ class ReviewByReviewBoard(ReviewMixin):
         if ticket['Build ID']:
             build_url = self.build_url(ticket)
         testing = testing.replace('%b', build_url)
-        # TODO: This seems to leave \_ in testing URL.
+        # TODO: ReviewBoard: sThis seems to leave \_ in testing URL.
         self._update_review_draft(id, {'branch': ticket['Branch'],
                                        'summary': title,
                                        'description': description,
@@ -272,7 +272,7 @@ class ReviewByGerrit(ReviewMixin):
         Git()('checkout ' + branch)
 
     def review_status(self, review_id):
-        # TODO: Implement
+        # TODO: Gerrit: Implement review_status().
         return 'Pending'
 
     def review_url(self, review_id):
@@ -307,7 +307,7 @@ class ReviewByVSTS(ReviewMixin):
         if not self._vsts_query:
             raise QError("When using ReviewByVSTS, also TicketingByVSTS must be in user.")
 
-# TODO: Enable once this is working
+# TODO: VSTS: Enable once this is working
 #
 #        repo_id = self._find_vsts_git_repository()
 #        text = self.edit_review_comments(ticket)
@@ -333,7 +333,7 @@ class ReviewByVSTS(ReviewMixin):
         return '1'
 
     def review_status(self, review_id):
-        # TODO: Implement
+        # TODO: VSTS: Implement review_status().
         return 'Pending'
 
     def review_url(self, review_id):
@@ -341,7 +341,7 @@ class ReviewByVSTS(ReviewMixin):
             return QSettings.REVIEW_URL.replace('%c', str(review_id))
 
     def review_update_build(self, ticket):
-        print "TODO: UPDATE BUILD"
+        # TODO: VSTS: Implement review_update_build().
         return
 
     def review_update(self, ticket, file):

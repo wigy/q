@@ -12,7 +12,6 @@ class CommandMy(Command):
     """
     Handler for my private changes that are not to be commited publicly.
     """
-    # TODO: Delete option.
     param_aliases = {
                      'a' : 'apply',
                      's' : 'save',
