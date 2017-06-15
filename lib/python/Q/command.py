@@ -55,15 +55,17 @@ class Command:
         self.args = []
         self.opts = {}
         code = None
+        argv = list(argv)
         # Parse ticket number as first argument.
         if len(argv):
             code = self._check_for_ticket(argv[0])
             if not code is None:
                 argv = argv[1:]
         # Separate options and arguments.
+        i = 0
         for arg in argv:
             if arg in self.param_aliases:
-                arg = self.param_aliases[arg]
+                argv[i] = self.param_aliases[arg]
             else:
                 opt = re.match('--(\w+)(=(.*))?',arg)
                 if opt:
@@ -74,6 +76,7 @@ class Command:
                         self.opts[opts[0]] = True
                 else:
                     self.args.append(arg)
+            i += 1
         # Run intialize hook and execute command.
         self.init(code)
         self.run()

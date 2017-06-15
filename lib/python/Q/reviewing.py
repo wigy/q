@@ -417,3 +417,7 @@ class ReviewByBitbucket(ReviewMixin):
             return 'Success'
         else:
             raise QError('Unknown status of review: %r.' % state)
+
+    def review_update(self, ticket, file):
+        # Git push is enough.
+        pass
