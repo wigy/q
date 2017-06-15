@@ -40,6 +40,8 @@ class Command:
         """
         if str == '0':
             return str
+        if re.match(QSettings.TICKET_NUMBER_REGEX, str):
+            return str
         for code in Ticket.all_codes():
             if str == code:
                 return code
