@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+# TODO: Releasing for Bamboo.
 # TODO: Log command showing logs only from the base version until now
 # TODO: Reset command to track down all non-private changes and re-checkout / remove those files.
 # TODO: BUG Cannot jump to ticket with 'q q' if in release-tag branch for example.

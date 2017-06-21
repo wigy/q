@@ -288,6 +288,7 @@ class Ticket:
             base = self['Base']
         return base
 
+    @classmethod
     def branch_number_of(self, name):
         """
         Get the ticket number from branch name.
@@ -361,6 +362,7 @@ class Ticket:
         Get the list of files that has been changed for this ticket.
         """
         from helper import Git
+        # TODO: We need to check if merge base is a ticket and if it is Done, use master perhaps.
         return Git()('diff --name-only '+self.merge_base(), get_output=True).strip().split("\n")
 
     def finished(self):

@@ -67,7 +67,7 @@ class Command:
         i = 0
         for arg in argv:
             if arg in self.param_aliases:
-                argv[i] = self.param_aliases[arg]
+                self.args.append(self.param_aliases[arg])
             else:
                 opt = re.match('--(\w+)(=(.*))?',arg)
                 if opt:
