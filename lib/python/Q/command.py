@@ -42,6 +42,8 @@ class Command:
             return str
         if re.match(QSettings.TICKET_NUMBER_REGEX, str):
             return str
+        if QSettings.WORKDIR is None:
+            return None
         for code in Ticket.all_codes():
             if str == code:
                 return code
