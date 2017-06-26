@@ -31,6 +31,8 @@ class CommandBuild(AutoGoCommand):
             self.run_drop()
         elif self.args[0] == 'success':
             self.run_success()
+        if self.args[0] == 'fail':
+            self.run_fail()
         else:
             raise QError("Invalid argument '%s'.",self.args[0])
 
@@ -90,4 +92,11 @@ class CommandBuild(AutoGoCommand):
         self.wr("Marking the ticket as successfully built.")
         self.ticket['Build Result'] = 'Success'
         self.ticket.set_status('End Building')
+        self.ticket.save()
+
+    def run_fail(self):
+        self.wr("Marking the ticket as build failed.")
+        self.ticket['Build Result'] = 'Fail'
+        self.ticket.set_status('End Building')
+        self.ticket.set_status('Working')
         self.ticket.save()
