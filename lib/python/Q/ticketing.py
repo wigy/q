@@ -2,12 +2,11 @@ import xmlrpclib
 import json
 import urllib
 import re
-import requests
 
 from settings import QSettings
 from error import QError
 from ticket import Ticket
-from helper import Curl
+from helper import Curl, Requests
 from conversions import html2markdown
 
 
@@ -377,7 +376,7 @@ class TicketingByAtlassian(TicketingMixin):
         Assign ticket to myself and look for transition to 'In Progress' and do it if found.
         """
         data = {"name": QSettings.TICKETING_USER.split('@')[0]}
-        resp = requests.put(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/assignee', json=data, auth=self._ticketing_auth())
+        resp = Requests()(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/assignee', put=data, auth=self._ticketing_auth())
         if (resp.status_code != 204):
             raise QError("Claiming ownership of the ticket failed.")
         self._set_ticket_status(ticket, QSettings.ATLASSIAN_STATUS_WORKING)
@@ -424,13 +423,13 @@ class TicketingByAtlassian(TicketingMixin):
         Fetch the ticket data for the given ticket code.
         """
         self._ticketing_check()
-        resp = requests.get(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + code, auth=self._ticketing_auth())
+        resp = Requests()(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + code, auth=self._ticketing_auth())
         return resp.json()
 
     def _set_ticket_status(self, ticket, status):
         self.cmd.wr("Setting ticket status of %r to %r.", ticket.code, status)
         id = self._ticketing_transition(ticket, status)
         data = {"transition": {"id": id}}
-        resp = requests.post(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', json=data, auth=self._ticketing_auth())
+        resp = Requests()(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', post=data, auth=self._ticketing_auth())
         if (resp.status_code != 204):
             raise QError("Setting ticket %r state failed." % status)

@@ -8,6 +8,7 @@ import glob
 import time
 import shutil
 import tempfile
+import requests
 
 from error import QError
 from settings import QSettings
@@ -126,6 +127,31 @@ class Curl(QHelper):
         ret = buf.getvalue()
         buf.close()
         return ret
+
+
+class Requests(QHelper):
+    """
+    Newer HTTP helper version using `requests`.
+    """
+    def run(self, url, post=None, put=None, patch=None, upload=None, quiet=False, user=None, password=None, auth=None):
+        from q import Q
+        if QSettings.OFFLINE_MODE == 'yes':
+            self.wr("Skipping in offline-mode: "+Q.URL + url + Q.END)
+            return None
+        if user:
+            auth = (user, password)
+        method = requests.get
+        json = None
+        if post:
+            method = requests.post
+            json = post
+        elif put:
+            method = requests.put
+            json = put
+        elif patch:
+            method = requests.patch
+            json = patch
+        return method(url, auth=auth, json=json)
 
 
 class SystemCall(QHelper):

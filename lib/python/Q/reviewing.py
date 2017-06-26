@@ -1,11 +1,10 @@
 import os
 import re
 import json
-import requests
 
 from settings import QSettings
 from error import QError
-from helper import Curl, Git, Edit
+from helper import Curl, Git, Edit, Requests
 
 
 class ReviewMixin:
@@ -376,7 +375,7 @@ class ReviewByBitbucket(ReviewMixin):
             },
             "close_source_branch": False
         }
-        resp = requests.post(url, json=out, auth=self._review_auth())
+        resp = Requests()(url, post=out, auth=self._review_auth())
         data = resp.json()
         diff = data['links']['diff']['href']
         return int(re.match('.*/pullrequests/(.*)/diff', diff).groups()[0])
@@ -406,7 +405,9 @@ class ReviewByBitbucket(ReviewMixin):
     def review_status(self, review_id):
         repo = "%s/%s" % (QSettings.BITBUCKET_PROJECT, QSettings.BITBUCKET_REPO)
         url = 'https://bitbucket.org/api/2.0/repositories/%s/pullrequests/%s' % (repo, review_id)
-        resp = requests.get(url, auth=self._review_auth())
+        resp = Requests()(url, auth=self._review_auth())
+        if not resp:
+            return None
         data = resp.json()
         state = data['state']
         if state == 'OPEN':
