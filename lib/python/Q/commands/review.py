@@ -19,7 +19,7 @@ class CommandReview(AutoGoCommand):
 
     def run(self):
         """
-        usage: q review [<code>] [[--force] make|drop|success]
+        usage: q review [<code>] [[--force] make|drop|success|fail]
         """
         from ..q import Q
         if self.args and (self.args[0] == 'make'):
@@ -30,6 +30,12 @@ class CommandReview(AutoGoCommand):
             return
         if self.args and (self.args[0] == 'success'):
             self.run_success()
+            return
+        if self.args and (self.args[0] == 'fail'):
+            self.run_fail()
+            return
+        if self.args and (self.args[0] == 'pending'):
+            self.run_pending()
             return
         if self.args and (self.args[0] == 'update'):
             self.run_update()
@@ -113,4 +119,17 @@ class CommandReview(AutoGoCommand):
         self.wr("Marking the ticket as successfully reviewed.")
         self.ticket['Review Result'] = 'Success'
         self.ticket.set_status('End Reviewing')
+        self.ticket.save()
+
+    def run_fail(self):
+        self.wr("Marking the ticket as failed review.")
+        self.ticket['Review Result'] = 'Fail'
+        self.ticket.set_status('End Reviewing')
+        self.ticket.set_status('Working')
+        self.ticket.save()
+
+    def run_pending(self):
+        self.wr("Marking the ticket as review pending.")
+        self.ticket['Review Result'] = 'Pending'
+        self.ticket.set_status('Reviewing')
         self.ticket.save()
