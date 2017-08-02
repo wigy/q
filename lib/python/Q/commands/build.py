@@ -31,7 +31,7 @@ class CommandBuild(AutoGoCommand):
             self.run_drop()
         elif self.args[0] == 'success':
             self.run_success()
-        if self.args[0] == 'fail':
+        elif self.args[0] == 'fail':
             self.run_fail()
         else:
             raise QError("Invalid argument '%s'.",self.args[0])

@@ -394,7 +394,7 @@ class TicketingByAtlassian(TicketingMixin):
         self._set_ticket_status(ticket, QSettings.ATLASSIAN_STATUS_WORKING)
 
     def _ticketing_transition(self, ticket, name):
-        resp = requests.get(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', auth=self._ticketing_auth())
+        resp = Requests()(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', auth=self._ticketing_auth())
         data = resp.json()
         for tr in data['transitions']:
             if tr['name'].upper() == name.upper():

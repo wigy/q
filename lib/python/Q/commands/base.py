@@ -24,4 +24,4 @@ class CommandBase(AutoGoCommand):
         else:
             base = 'default ' + Q.BRANCH + QSettings.BASE_BRANCH + Q.END
         self.wr("Base is " + base)
-
+        # TODO: Can run update here.

@@ -411,6 +411,21 @@ class ReviewByBitbucket(ReviewMixin):
         data = resp.json()
         state = data['state']
         if state == 'OPEN':
+            ok = 0
+            total = 0
+            for person in data['participants']:
+                if person['role'] == 'REVIEWER':
+                    total += 1
+                    if person['approved']:
+                        ok += 1
+                elif person['role'] == 'PARTICIPANT':
+                    pass
+                else:
+                    raise QError('Unknown review role: %r.' % person['role'])
+            if total:
+                if ok == total:
+                    return 'Success'
+                return str(ok) + '/' + str(total)
             return 'Pending'
         elif state == 'DECLINED':
             return 'Fail'
