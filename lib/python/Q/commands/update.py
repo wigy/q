@@ -15,7 +15,6 @@ class CommandUpdate(AutoGoCommand):
         usage: q update [<code>] [--all] [--local]
         """
         base = self.ticket.base_branch()
-        QSettings.GIT_REMOTE
         from ..q import Q
         Q('my','revert')
         if Git().has_changes():
@@ -28,7 +27,7 @@ class CommandUpdate(AutoGoCommand):
             Q('update', self.ticket.branch_number_of(base),'--all','--local')
         if old != base:
             Git()('checkout '+old)
-            if base[0:len(QSettings.GIT_REMOTE)] != QSettings.GIT_REMOTE:
+            if base == 'master':
                 to_merge = QSettings.GIT_REMOTE +'/' + base
             else:
                 to_merge = base
