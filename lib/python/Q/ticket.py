@@ -436,16 +436,20 @@ class Ticket:
         from q import Q
         ret = self['Status']
         if self.finished() or self['Status'] == 'Ready':
-            return ret
+            return Q.YELLOW + ret + Q.END
 
         if self['Build ID']:
             if self['Build Result']=='Fail':
-                ret += Q.NOTE+" Build:"+self['Build Result']+Q.END
+                ret += Q.RED+" Build:"+self['Build Result']+Q.END
+            elif self['Build Result']=='Success':
+                ret += Q.GREEN+" Build:"+self['Build Result']+Q.END
             else:
                 ret += " Build:"+self['Build Result']
         if self['Review ID']:
             if self['Review Result']=='Fail':
-                ret += Q.NOTE+" Review:"+self['Review Result']+Q.END
+                ret += Q.RED+" Review:"+self['Review Result']+Q.END
+            elif self['Review Result']=='Success':
+                ret += Q.GREEN+" Review:"+self['Review Result']+Q.END
             else:
                 ret += " Review:"+self['Review Result']
         return ret
