@@ -47,9 +47,11 @@ class Command:
         for code in Ticket.all_codes():
             if str == code:
                 return code
-            match = re.match('.*?([0-9]+).*', code)
+            match = re.match(QSettings.TICKET_NUMBER_REGEX, code)
             if match:
-                if match.group(1) == str:
+                matches = match.groups()
+                # If there are more than one parenthesis, use the last one.
+                if matches[len(matches)-1] == str:
                     return code
 
     def parse(self, *argv):
