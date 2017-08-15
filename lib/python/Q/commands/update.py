@@ -27,7 +27,8 @@ class CommandUpdate(AutoGoCommand):
             Q('update', self.ticket.branch_number_of(base),'--all','--local')
         if old != base:
             Git()('checkout '+old)
-            if base == 'master':
+            # TODO: Do not add remote in recursive update --all.
+            if base[0:len(QSettings.GIT_REMOTE)] != QSettings.GIT_REMOTE:
                 to_merge = QSettings.GIT_REMOTE +'/' + base
             else:
                 to_merge = base
