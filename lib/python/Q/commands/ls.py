@@ -19,6 +19,7 @@ class CommandLs(Command):
             Q('my','revert')
         done = []
         current_done = None
+        show_all = self.opts.get('all')
         changed = ""
         if current and Git().has_changes():
             changed = " *MODIFIED*"
@@ -29,6 +30,7 @@ class CommandLs(Command):
             self.load(code)
             self.ticket.refresh()
         # Then list them.
+        nothing = True
         for code in codes:
             self.load(code)
             color = Q.USER
@@ -47,8 +49,8 @@ class CommandLs(Command):
                     current_done = s
             else:
                 self.wr(s, channel='Tickets')
+                nothing = False
         if not self.opts.get('short'):
-            show_all = self.opts.get('all')
             n=0
             for s in done:
                 self.wr(s, channel='Old Tickets')
@@ -58,6 +60,8 @@ class CommandLs(Command):
                     break
         if current_done:
             self.wr(current_done, channel='Old Tickets')
+        if nothing and not show_all:
+            self.wr("No open tickets. Use " + Q.COMMAND + "q ls --all" + Q.END + " to view old tickets.")
         if not codes:
             self.wr("No tickets created.", channel='Help')
             self.wr("You can use "+Q.COMMAND+"q start <ticket_number> <description>"+Q.END+" to create one.", channel='Help')
