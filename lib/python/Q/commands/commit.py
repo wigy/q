@@ -16,7 +16,8 @@ class CommandCommit(AutoGoCommand):
         from ..q import Q
         Q('my','revert')
         diff = Git()('--no-pager diff', get_output=True).strip()
-        if diff == "" and not self.opts.get('force'):
+        missing = Git().missing_files()
+        if diff == "" and len(missing) == 0 and not self.opts.get('force'):
             self.wr("No changes to commit.")
             Q('my','apply')
             return
@@ -25,11 +26,15 @@ class CommandCommit(AutoGoCommand):
         Git()('diff '+merge_base+" > "+self.ticket.path("latest.diff"))
         Git()('diff --color')
 
+        for file in missing:
+            self.wr('New file: ' + Q.FILE + file + Q.END)
         self.wr('Empty line to abort:')
         comments = raw_input()
         if not comments:
             self.wr('Aborted.')
         else:
+            for file in missing:
+                Git()('add', file)
             msg = QSettings.COMMIT_MESSAGE
             msg = msg.replace('%c', self.ticket.code)
             msg = msg.replace('%m', comments)
