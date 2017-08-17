@@ -295,6 +295,8 @@ class Git(SystemCall):
         Resolve the code of the current branch if any.
         """
         branch = self.current_branch_name(ignore_error=ignore_error)
+        if branch == QSettings.LOBBY_BRANCH:
+            return 0
         num = None
         if branch:
             num = re.search(QSettings.TICKET_BRANCH_REGEX, branch)

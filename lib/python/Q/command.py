@@ -176,9 +176,10 @@ class AutoLoadCommand(Command):
                 raise QError("No such ticket as #%s." % code)
         else:
             code = Git().current_branch_number()
-        if not code:
+        if code is None:
             raise QError("Cannot find the current ticket number from git branch.")
-        self.load(code)
+        if code:
+            self.load(code)
 
 
 class AutoGoCommand(AutoLoadCommand):
