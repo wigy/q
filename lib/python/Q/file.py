@@ -45,7 +45,7 @@ class QFile:
         Load data from the current path and return as a dictionary.
         """
         ret = {}
-        data = self.read()
+        data = self.read().decode('utf-8')
         str = None
         k = None
         for line in data.split("\n"):
@@ -75,7 +75,7 @@ class QFile:
             if not k in values:
                 continue
             out += k + ":\n"
-            lines = unicode(values[k]).split("\n")
+            lines = values[k].split("\n")
             for line in lines:
                 out += "  " + line + "\n"
         self.write(out.encode('utf-8'))

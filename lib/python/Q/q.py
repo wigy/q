@@ -64,9 +64,9 @@ class Q:
             Q.prev_channel = channel
         if len(msg) > 1:
             args = msg[1:]
-            sys.stderr.write(str(msg[0]) % args)
+            sys.stderr.write(unicode(msg[0]) % args)
         else:
-            sys.stderr.write(str(msg[0]))
+            sys.stderr.write(unicode(msg[0]))
         sys.stderr.write("\n")
 
     def parse(self, *argv):
