@@ -14,6 +14,8 @@ class CommandCommit(AutoGoCommand):
         usage: q commit [<code>] [--force]
         """
         from ..q import Q
+        if QSettings.LOBBY_BRANCH == Git().current_branch_name():
+            raise QError('You are in ' + QSettings.LOBBY_BRANCH + ' branch.')
         Q('my','revert')
         diff = Git()('--no-pager diff', get_output=True).strip()
         missing = Git().missing_files()

@@ -368,6 +368,8 @@ class Git(SystemCall):
         ret = self.run('ls-files -o --exclude-standard', get_output=True, chdir=QSettings.APPDIR).strip().split("\n")
         if len(ret) == 1 and ret[0] == "":
             return []
+        for i in range(len(ret)):
+            ret[i] = QSettings.APPDIR + ret[i]
         return ret
 
 
