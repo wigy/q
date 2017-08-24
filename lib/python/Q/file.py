@@ -75,7 +75,10 @@ class QFile:
             if not k in values:
                 continue
             out += k + ":\n"
-            lines = values[k].split("\n")
+            if not (type(values[k]) is unicode or type(values[k]) is str):
+                lines = unicode(values[k]).split("\n")
+            else:
+                lines = values[k].split("\n")
             for line in lines:
                 out += "  " + line + "\n"
         self.write(out.encode('utf-8'))
