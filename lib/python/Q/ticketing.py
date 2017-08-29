@@ -427,6 +427,9 @@ class TicketingByAtlassian(TicketingMixin):
         return resp.json()
 
     def _set_ticket_status(self, ticket, status):
+        if status is None:
+            self.cmd.wr("No status in ticketing system, skipping status change.")
+            return
         self.cmd.wr("Setting ticket status of %r to %r.", ticket.code, status)
         id = self._ticketing_transition(ticket, status)
         data = {"transition": {"id": id}}
