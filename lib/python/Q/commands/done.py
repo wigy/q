@@ -20,5 +20,5 @@ class CommandDone(AutoGoCommand):
             if self.ticket['Status'] == 'Waiting':
                 self.ticket.set_status('Ready')
         self.ticket.set_status('Done')
-#        self.app.done_work_on_ticket(self.ticket)
+        self.app.done_work_on_ticket(self.ticket)
         self.ticket.save()
