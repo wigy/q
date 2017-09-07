@@ -30,12 +30,15 @@ class Ticket:
           => 'Review' - With 'q review make' command.
           => 'Waiting' - When process completed manually.
       'Building' - A test build in progress.
+          => 'Working' when fixes are needed.
           => 'Building + Review' - With 'q review make' command.
           => 'Waiting' once build result complete.
       'Reviewing' - Waiting for review.
+          => 'Working' when fixes are needed.
           => 'Building + Reviewing' - With 'q build make' command.
           => 'Waiting' once review results received.
       'Building + Reviewing' - Waiting for build and review.
+          => 'Working' when fixes are needed.
           => 'Reviewing' once build result complete.
           => 'Building' once review results received.
           => 'Waiting' once both build and review results received.
@@ -47,8 +50,6 @@ class Ticket:
           => 'Working' - With 'q reopen' command.
    <= 'Canceled' - Ticket has been canceled and it will not going to be made.
           => 'Working' - With 'q reopen' command.
-
-    TODO: Fill in the complete process. Maybe move status setting to own function to enforce correct flow.
     """
     STATUS_MAP = {None : ['New', 'Watching', 'Started'],
                   'New': ['Started'],
@@ -57,7 +58,7 @@ class Ticket:
                   'Working': ['Building', 'Reviewing', 'Canceled', 'Waiting'],
                   'Building': ['Building + Reviewing', 'Working', 'Waiting'],
                   'Reviewing': ['Building + Reviewing', 'Working', 'Waiting'],
-                  'Building + Reviewing': ['Building', 'Reviewing'],
+                  'Building + Reviewing': ['Building', 'Reviewing', 'Working'],
                   'Waiting': ['Reviewing', 'Building', 'Ready', 'Canceled', 'Working'],
                   'Ready' : ['Done'],
                   'Done': ['Working'],

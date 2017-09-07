@@ -437,3 +437,7 @@ class ReviewByBitbucket(ReviewMixin):
     def review_update(self, ticket, file):
         # Git push is enough.
         pass
+
+    def review_update_build(self, ticket):
+        # No need to update.
+        return
