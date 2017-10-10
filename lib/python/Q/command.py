@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+import os
 from error import QError
 from settings import QSettings
 from ticket import Ticket
@@ -33,6 +34,17 @@ class Command:
     def __init__(self, app):
         self.app = app
         self.ticket = Ticket(self)
+
+    def readyness_check(self):
+        """
+        Check configured verifications before launching build or review.
+        """
+        from .q import Q
+        if QSettings.LINT:
+            self.wr('Performing readyness checks...')
+            self.wr(Q.COMMAND + QSettings.LINT + Q.END)
+            if os.system(QSettings.LINT):
+                raise QError("Readyness check failed.")
 
     def _check_for_ticket(self, str):
         """

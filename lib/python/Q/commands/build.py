@@ -59,6 +59,7 @@ class CommandBuild(AutoGoCommand):
         self.ticket.save()
 
     def run_make(self):
+        self.readyness_check()
         from ..q import Q
         if not self.ticket['Build ID'] is None:
             raise QError("Ticket has already build %r. Use " + Q.COMMAND + "q build update" + Q.ERROR + " to rebuild.", self.ticket['Build ID'])
@@ -67,6 +68,7 @@ class CommandBuild(AutoGoCommand):
         Q('my','apply')
 
     def run_update(self):
+        self.readyness_check()
         from ..q import Q
         if self.ticket['Build ID'] is None:
             raise QError("Cannot update without any earlier builds.")

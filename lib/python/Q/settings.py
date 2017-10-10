@@ -75,6 +75,8 @@ class QSettings:
     GRUNT_BUILD_URL = None
     # Name of the IDE for code editing.
     IDE = 'code'
+    # Command to verify syntax for the source code.
+    LINT = None
     # Name of the branch we hang around, when there is no ticket selected.
     LOBBY_BRANCH = 'master'
     # If set, do not do any network queries.

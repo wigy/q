@@ -72,8 +72,10 @@ class CommandReview(AutoGoCommand):
         self.ticket.delete('Review Info')
         self.ticket.set_status('Working')
         self.ticket.save()
+        # TODO: Delete review files.
 
     def run_make(self):
+        self.readyness_check()
         from ..q import Q
         if not self.ticket['Review ID'] is None:
             raise QError("Ticket has already review %r pending.", self.ticket['Review ID'])
@@ -103,6 +105,7 @@ class CommandReview(AutoGoCommand):
         return file
 
     def run_update(self):
+        self.readyness_check()
         from ..q import Q
         rid = self.ticket['Review ID']
         if rid is None:
