@@ -17,7 +17,7 @@ class CommandStart(Command):
 
     def run(self):
         """
-        usage: q start <code> [--branch=<existing_branch_name>] [--base=<initial_checkout_tag>] [<title>]
+        usage: q start <code> [--branch=<existing_branch_name>] [--base=<initial_checkout_tah>] [<title>]
                <code> - A ticket number.
                <title> - A descriptive title of the ticket.
 
