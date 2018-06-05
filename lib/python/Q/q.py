@@ -8,9 +8,9 @@ import glob
 import time
 import shutil
 
-from settings import QSettings
-from error import QError
-from project import QProject
+from .settings import QSettings
+from .error import QError
+from .project import QProject
 
 
 class Q:

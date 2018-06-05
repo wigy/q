@@ -2,9 +2,9 @@ import os
 import re
 import json
 
-from settings import QSettings
-from error import QError
-from helper import Curl, Git, Edit, Requests
+from .settings import QSettings
+from .error import QError
+from .helper import Curl, Git, Edit, Requests
 
 
 class ReviewMixin:

@@ -2,16 +2,16 @@ import sys
 import os
 import re
 
-from error import QError
-from settings import QSettings
-from building import NoBuild, BuildByBamboo
-from reviewing import ReviewByReviewBoard, ReviewByGerrit, ReviewByVSTS, ReviewByBitbucket, NoReview
-from testing import TestingByNose, TestingByShellCommands
-from database import DatabaseByDjango
-from ticketing import TicketingByTrac, ManualTicketing, TicketingByVSTS, TicketingByAtlassian
-from releasing import NoReleasing, ReleasingByGerrit, ReleasingByBamboo
-from command import Command
-from ticket import Ticket
+from .error import QError
+from .settings import QSettings
+from .building import NoBuild, BuildByBamboo
+from .reviewing import ReviewByReviewBoard, ReviewByGerrit, ReviewByVSTS, ReviewByBitbucket, NoReview
+from .testing import TestingByNose, TestingByShellCommands
+from .database import DatabaseByDjango
+from .ticketing import TicketingByTrac, ManualTicketing, TicketingByVSTS, TicketingByAtlassian
+from .releasing import NoReleasing, ReleasingByGerrit, ReleasingByBamboo
+from .command import Command
+from .ticket import Ticket
 
 
 class QProject:

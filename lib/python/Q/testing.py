@@ -1,5 +1,5 @@
-from error import QError
-from helper import Nose, SystemCall
+from .error import QError
+from .helper import Nose, SystemCall
 
 
 class TestingMixin:
