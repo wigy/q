@@ -60,7 +60,7 @@ class Ticket:
                   'Reviewing': ['Building + Reviewing', 'Working', 'Waiting'],
                   'Building + Reviewing': ['Building', 'Reviewing', 'Working'],
                   'Waiting': ['Reviewing', 'Building', 'Ready', 'Canceled', 'Working'],
-                  'Ready' : ['Done'],
+                  'Ready' : ['Done', 'Working'],
                   'Done': ['Working'],
                   'Canceled': ['Working'],
                   }
