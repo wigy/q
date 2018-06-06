@@ -9,9 +9,9 @@ import time
 import shutil
 from distutils.dir_util import mkpath
 
-from error import QError
-from settings import QSettings
-from file import QFile
+from .error import QError
+from .settings import QSettings
+from .file import QFile
 
 
 class Ticket:

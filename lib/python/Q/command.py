@@ -1,10 +1,10 @@
 # -*- coding: UTF-8 -*-
 
 import os
-from error import QError
-from settings import QSettings
-from ticket import Ticket
-from helper import *
+from .error import QError
+from .settings import QSettings
+from .ticket import Ticket
+from .helper import *
 
 
 class Command:

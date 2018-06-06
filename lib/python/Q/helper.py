@@ -10,10 +10,10 @@ import shutil
 import tempfile
 import requests
 
-from error import QError
-from settings import QSettings
-from file import QFile
-from ticket import Ticket
+from .error import QError
+from .settings import QSettings
+from .file import QFile
+from .ticket import Ticket
 
 
 class QHelper(object):

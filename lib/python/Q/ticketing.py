@@ -3,11 +3,11 @@ import json
 import urllib
 import re
 
-from settings import QSettings
-from error import QError
-from ticket import Ticket
-from helper import Curl, Requests
-from conversions import html2markdown
+from .settings import QSettings
+from .error import QError
+from .ticket import Ticket
+from .helper import Curl, Requests
+from .conversions import html2markdown
 
 
 class TicketingMixin:

@@ -8,7 +8,7 @@ import glob
 import time
 import shutil
 
-from error import QError
+from .error import QError
 
 
 class QFile:

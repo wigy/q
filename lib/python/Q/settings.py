@@ -8,7 +8,7 @@ import glob
 import time
 import shutil
 
-from file import QFile
+from .file import QFile
 
 
 class QSettings:

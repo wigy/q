@@ -10,9 +10,9 @@ import shutil
 import requests
 import json
 
-from settings import QSettings
-from error import QError
-from helper import Curl, Grunt
+from .settings import QSettings
+from .error import QError
+from .helper import Curl, Grunt
 
 
 class BuildMixin:

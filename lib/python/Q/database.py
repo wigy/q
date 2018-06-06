@@ -1,6 +1,6 @@
-from error import QError
-from settings import QSettings
-from helper import Mysql, Sed
+from .error import QError
+from .settings import QSettings
+from .helper import Mysql, Sed
 
 
 class DatabaseMixin:

@@ -1,5 +1,5 @@
-from settings import QSettings
-from error import QError
+from .settings import QSettings
+from .error import QError
 
 
 class ReleasingMixin:
