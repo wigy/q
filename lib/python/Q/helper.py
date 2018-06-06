@@ -346,8 +346,8 @@ class Git(SystemCall):
         Verify if there are any changes to commit.
         """
         ret = True
-        for line in self.run('status',get_output=True, no_echo=True).split("\n"):
-            if re.search(r'nothing to commit.*working directory clean', line):
+        for line in self.run('status',get_output=True, no_echo=False).split("\n"):
+            if re.search(r'nothing to commit.*working (tree|directory) clean', line):
                 ret = False
                 break
         return ret
