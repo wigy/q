@@ -21,15 +21,14 @@ class CommandUpdate(AutoGoCommand):
             raise QError("Need to commit changes first.")
         old = Git().current_branch_name()
         base = self.ticket.base_branch()
-        if not self.opts.get('local'):
+        if not self.opts.get('local') and base == QSettings.BASE_BRANCH:
             Git()('fetch -a')
         if base != QSettings.BASE_BRANCH and self.opts.get('all'):
             Q('update', self.ticket.branch_number_of(base),'--all','--local')
         if old != base:
             Git()('checkout '+old)
-            # TODO: Do not add remote in recursive update --all.
-            if base[0:len(QSettings.GIT_REMOTE)] != QSettings.GIT_REMOTE:
-                to_merge = QSettings.GIT_REMOTE +'/' + base
+            if base == QSettings.BASE_BRANCH:
+                to_merge = QSettings.GIT_REMOTE +'/' + QSettings.BASE_BRANCH
             else:
                 to_merge = base
             Git()('merge --no-edit '+to_merge)
