@@ -356,6 +356,9 @@ class ReviewByBitbucket(ReviewMixin):
     """
 
     def review_start(self, ticket, file):
+        base = ticket['Base']
+        if not base:
+            base = QSettings.BITBUCKET_PR_TARGET
         self._review_check()
         repo = "%s/%s" % (QSettings.BITBUCKET_PROJECT, QSettings.BITBUCKET_REPO)
         url = 'https://bitbucket.org/api/2.0/repositories/%s/pullrequests/' % repo
@@ -370,7 +373,7 @@ class ReviewByBitbucket(ReviewMixin):
             },
             "destination": {
                 "branch": {
-                    "name": QSettings.BITBUCKET_PR_TARGET
+                    "name": base
                 }
             },
             "close_source_branch": False
