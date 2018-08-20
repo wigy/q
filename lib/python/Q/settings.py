@@ -59,6 +59,8 @@ class QSettings:
     BITBUCKET_PR_TARGET = 'master'
     # New branch name patterb. %c ticket code, %u user, %t title in lower case underscored
     BRANCH_NAMING = '%c_%u_%t'
+    # How long ticket build and review statuses are cached until refetched.
+    CACHING_TIME_MIN = 5
     # Format of the commit message: %c ticket code, %m message
     COMMIT_MESSAGE = 'Ticket #%c: %m'
     # Name of the database.

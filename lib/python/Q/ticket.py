@@ -12,6 +12,7 @@ from distutils.dir_util import mkpath
 from .error import QError
 from .settings import QSettings
 from .file import QFile
+from .cache import QCache
 
 
 class Ticket:
@@ -391,13 +392,15 @@ class Ticket:
         save = False
 
         if self['Build ID'] and self['Build Result'] not in ['Success', 'Fail']:
-            state = self.cmd.app.build_status(self)
+            check = lambda : self.cmd.app.build_status(self)
+            state = QCache.get('Build ' + str(self['Build ID']), check)
             if state and self['Build Result'] != state:
                 self['Build Result'] = state
                 save = True
 
         if self['Review ID'] and self['Review Result'] not in ['Success', 'Fail']:
-            state = self.cmd.app.review_status(self['Review ID'])
+            check = lambda : self.cmd.app.review_status(self['Review ID'])
+            state = QCache.get('Review ' + str(self['Review ID']), check)
             if state and self['Review Result'] != state:
                 self['Review Result'] = state
                 save = True
