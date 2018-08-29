@@ -380,6 +380,8 @@ class ReviewByBitbucket(ReviewMixin):
         }
         resp = Requests()(url, post=out, auth=self._review_auth())
         data = resp.json()
+        if data['type'] == 'error':
+            raise QError('Error: %r', data)
         diff = data['links']['diff']['href']
         return int(re.match('.*/pullrequests/(.*)/diff', diff).groups()[0])
 
