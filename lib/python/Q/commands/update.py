@@ -21,8 +21,11 @@ class CommandUpdate(AutoGoCommand):
             raise QError("Need to commit changes first.")
         old = Git().current_branch_name()
         base = self.ticket.base_branch()
-        if not self.opts.get('local') and base == QSettings.BASE_BRANCH:
-            Git()('fetch -a')
+        if not self.opts.get('local'):
+            if base == QSettings.BASE_BRANCH:
+                Git()('pull')
+            else:
+                Git()('fetch -a')
         if base != QSettings.BASE_BRANCH and self.opts.get('all'):
             Q('update', self.ticket.branch_number_of(base),'--all','--local')
         if old != base:

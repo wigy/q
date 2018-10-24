@@ -15,6 +15,8 @@ class CommandDone(AutoGoCommand):
         usage: q done [<code>] [--force]
         """
         if self.opts.get('force', False):
+            if self.ticket['Status'] == 'Started':
+                self.ticket.set_status('Working')
             if self.ticket['Status'] == 'Working':
                 self.ticket.set_status('Waiting')
             if self.ticket['Status'] == 'Waiting':
