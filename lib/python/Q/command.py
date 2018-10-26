@@ -144,35 +144,36 @@ class Command:
         """
         ret = {}
         from commands.backport import CommandBackport
+        from commands.base import CommandBase
         from commands.build import CommandBuild
         from commands.cancel import CommandCancel
-        from commands.create import CommandCreate
         from commands.commit import CommandCommit
+        from commands.create import CommandCreate
         from commands.destroy import CommandDestroy
         from commands.diff import CommandDiff
         from commands.done import CommandDone
         from commands.edit import CommandEdit
+        from commands.find import CommandFind
         from commands.go import CommandGo
         from commands.help import CommandHelp
+        from commands.last import CommandLast
         from commands.ls import CommandLs
         from commands.my import CommandMy
+        from commands.open import CommandOpen
         from commands.publish import CommandPublish
         from commands.release import CommandRelease
         from commands.reopen import CommandReopen
         from commands.review import CommandReview
-        from commands.show import CommandShow
         from commands.settings import CommandSettings
+        from commands.show import CommandShow
         from commands.start import CommandStart
-        from commands.update import CommandUpdate
         from commands.test import CommandTest
-        from commands.find import CommandFind
-        from commands.base import CommandBase
-        from commands.open import CommandOpen
+        from commands.update import CommandUpdate
         from commands.url import CommandUrl
 
         for name in ['Destroy', 'Help', 'Ls', 'Show', 'Start', 'Go', 'My', 'Diff', 'Commit', 'Settings', 'Publish',
                      'Update', 'Edit', 'Backport', 'Done', 'Build', 'Review', 'Release', 'Create', 'Reopen',
-                     'Cancel', 'Test', 'Find', 'Base', 'Open', 'Url']:
+                     'Cancel', 'Test', 'Find', 'Base', 'Open', 'Url', 'Last']:
             ret[name.lower()] = eval("Command" + name)
 
         return ret
