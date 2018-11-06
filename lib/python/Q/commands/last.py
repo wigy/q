@@ -25,22 +25,27 @@ class CommandLast(Command):
         results = {}
         for code in Ticket.all_codes():
             self.load(code)
+            started = self.ticket['Started'][0:10]
+            finished = None
             if self.ticket['Status'] == 'Done':
-                date = self.ticket['Finished'][0:10]
-                if date >= LIMIT:
-                    if date not in results:
-                        results[date] = []
-                    started = self.ticket['Started'][0:10]
-                    if date == started:
-                        results[date].append(code + ' ' + self.ticket['Title'] + Q.GREEN + ' [Done]' + Q.END)
-                    else:
-                        results[date].append(code + ' ' + self.ticket['Title'] + Q.YELLOW + ' [Finished]' + Q.END)
+                finished = self.ticket['Finished'][0:10]
+
+            if finished == started and started >= LIMIT:
+                if started not in results:
+                    results[started] = []
+                results[started].append(code + ' ' + self.ticket['Title'] + Q.MAGENTA + ' [Started and Finished]' + Q.END)
             else:
-                date = self.ticket['Started'][0:10]
-                if date >= LIMIT:
-                    if date not in results:
-                        results[date] = []
-                    results[date].append(code + ' ' + self.ticket['Title'] + Q.MAGENTA + ' [Started]' + Q.END)
+                if finished >= LIMIT:
+                    if finished not in results:
+                        results[finished] = []
+                    else:
+                        results[finished].append(code + ' ' + self.ticket['Title'] + Q.GREEN + ' [Finished]' + Q.END)
+
+                if started >= LIMIT:
+                    if started not in results:
+                        results[started] = []
+                    results[started].append(code + ' ' + self.ticket['Title'] + Q.YELLOW + ' [Started]' + Q.END)
+
         for title in sorted(results.keys()):
             self.wr(Q.TITLE + "\n" + title + Q.END + "\n")
             for subtitle in sorted(results[title]):
