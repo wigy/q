@@ -153,12 +153,14 @@ class Command:
         from commands.diff import CommandDiff
         from commands.done import CommandDone
         from commands.edit import CommandEdit
+        from commands.epic import CommandEpic
         from commands.find import CommandFind
         from commands.go import CommandGo
         from commands.help import CommandHelp
         from commands.last import CommandLast
         from commands.ls import CommandLs
         from commands.my import CommandMy
+        from commands.offline import CommandOffline
         from commands.open import CommandOpen
         from commands.publish import CommandPublish
         from commands.release import CommandRelease
@@ -173,7 +175,8 @@ class Command:
 
         for name in ['Destroy', 'Help', 'Ls', 'Show', 'Start', 'Go', 'My', 'Diff', 'Commit', 'Settings', 'Publish',
                      'Update', 'Edit', 'Backport', 'Done', 'Build', 'Review', 'Release', 'Create', 'Reopen',
-                     'Cancel', 'Test', 'Find', 'Base', 'Open', 'Url', 'Last']:
+                     'Cancel', 'Test', 'Find', 'Base', 'Open', 'Url', 'Last', 'Offline',
+                     'Epic']:
             ret[name.lower()] = eval("Command" + name)
 
         return ret

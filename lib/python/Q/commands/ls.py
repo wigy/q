@@ -36,8 +36,11 @@ class CommandLs(Command):
             color = Q.USER
             if self.ticket['Owner'] == QSettings.GIT_USER:
                 color = Q.USER_ME
+            branch_color = Q.BRANCH
+            if self.ticket.is_epic():
+                branch_color = Q.YELLOW
             title = self.ticket['Title']
-            ownership = '[' + color + self.ticket['Owner'] + ' ' + Q.BRANCH + self.ticket.branch_name() + Q.END + ']'
+            ownership = '[' + color + self.ticket['Owner'] + ' ' + branch_color + self.ticket.branch_name() + Q.END + ']'
             if code==current:
                 title += ' '+Q.MARK+changed
                 color = Q.MARKER

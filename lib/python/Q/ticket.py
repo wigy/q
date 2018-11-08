@@ -244,7 +244,7 @@ class Ticket:
         return ['Title', 'Status', 'Started', 'Finished', 'Base', 'Branch',
                 'URL', 'User', 'Review', 'Review Result', 'Review ID', 'Review Info',
                 'Build Result', 'Build ID', 'Build Info', 'Dump', 'DB',
-                'Tests', 'Files', 'Notes', 'Owner', 'Ticket Info']
+                'Tests', 'Files', 'Notes', 'Owner', 'Ticket Info', 'Epic']
 
     def keys(self):
         """
@@ -266,18 +266,21 @@ class Ticket:
         ret = QSettings.BRANCH_NAMING
         ret = ret.replace('%c', self.code)
         ret = ret.replace('%u', Git().username())
-        comment = self['Title'].replace(' ','_').lower()
-        title = ''
-        for c in comment:
-            if re.match(r'[0-9a-z]',c):
-                title += c
-            elif c == ':':
-                title += '__'
-            elif c == '_' or re.match(r'[^.?!"\']',c):
-                if title != '' and title[-1] != '_':
-                    title += '_'
-        if title[-1] == '_':
-            title = title[0:-1]
+        if self.is_epic():
+            title = 'master'
+        else:
+            comment = self['Title'].replace(' ','_').lower()
+            title = ''
+            for c in comment:
+                if re.match(r'[0-9a-z]',c):
+                    title += c
+                elif c == ':':
+                    title += '__'
+                elif c == '_' or re.match(r'[^.?!"\']',c):
+                    if title != '' and title[-1] != '_':
+                        title += '_'
+            while title[-1] == '_':
+                title = title[0:-1]
         ret = ret.replace('%t', title)
         return ret
 
@@ -289,6 +292,12 @@ class Ticket:
         if self['Base']:
             base = self['Base']
         return base
+
+    def is_epic(self):
+        """
+        Check if this ticket is an epic.
+        """
+        return self['Epic'] == 'True' or self['Epic'] == True
 
     @classmethod
     def branch_number_of(self, name):
