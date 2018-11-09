@@ -428,7 +428,7 @@ class ReviewByBitbucket(ReviewMixin):
                 else:
                     raise QError('Unknown review role: %r.' % person['role'])
             if total:
-                if ok == total:
+                if ok == total or (QSettings.REVIEW_SHIPITS and ok >= int(QSettings.REVIEW_SHIPITS)):
                     return 'Success'
                 return str(ok) + '/' + str(total)
             return 'Pending'

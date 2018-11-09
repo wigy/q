@@ -325,6 +325,16 @@ class Ticket:
                 ret.append(p)
         return ret
 
+    @classmethod
+    def stash_names(cls):
+        ret = {}
+        from helper import Git
+        for line in Git()('stash list', get_output=True, no_echo=True).strip().split("\n"):
+            hit = re.match(r'(stash@\{.+\}).*QuickAutoStash_(.+)',line.strip())
+            if hit:
+                ret[hit.group(2)] = hit.group(1)
+        return ret
+
     def print_summary(self):
         """
         Print basic details of the ticket.
@@ -348,6 +358,15 @@ class Ticket:
         if Git().has_changes():
             Git()('stash save --include-untracked QuickAutoStash_'+self.code)
 
+    def has_stash(self):
+        """
+        Return stash name, if the ticket has stashed data.
+        """
+        from helper import Git
+        stashes = Ticket.stash_names()
+        if self.code in stashes:
+            return stashes[self.code]
+
     def enter(self):
         """
         Hook to be called immediately after switched to this ticket.
@@ -360,10 +379,9 @@ class Ticket:
             self.cmd.app.change_db(db)
             # TODO: Restart servers
         Git()('checkout '+self.branch_name())
-        for line in Git()('stash list', get_output=True, no_echo=True).strip().split("\n"):
-            hit = re.match(r'(stash@\{.+\}).*QuickAutoStash_(.+)',line.strip())
-            if hit and hit.group(2) == self.code:
-                Git()('stash pop '+hit.group(1))
+        stash = self.has_stash()
+        if stash:
+            Git()('stash pop '+stash)
         if QSettings.USE_SUBMODULES:
             Git()('submodule update', chdir=QSettings.APPDIR)
         Q('my','apply')

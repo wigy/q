@@ -125,6 +125,16 @@ class Command:
         self.ticket = Ticket(self, code)
         self.ticket.load()
 
+    def get_ticket(self, code):
+        """
+        Get the ticket without changing current ticket.
+        """
+        old = self.ticket
+        self.load(code)
+        ret = self.ticket
+        self.ticket = old
+        return ret
+
     @staticmethod
     def find(cmd):
         """

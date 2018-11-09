@@ -14,7 +14,7 @@ class QCache:
     def get(cls, id, fn):
         if QCache.cache is None:
             QCache.load()
-        if id not in QCache.cache or (time.time() - QCache.cache[id]['time']) / 60 > QSettings.CACHING_TIME_MIN:
+        if id not in QCache.cache or (time.time() - QCache.cache[id]['time']) / 60 > int(QSettings.CACHING_TIME_MIN):
             QCache.cache[id] = {
                 "time": time.time(),
                 "value": fn()
