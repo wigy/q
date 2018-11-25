@@ -15,23 +15,24 @@ class CommandDone(AutoGoCommand):
         """
         usage: q done [<code>] [--force]
         """
-        # Relink old children.
+        if self.opts.get('force', False):
+            if self.ticket['Status'] == 'Started':
+                self.ticket.set_status('Working')
+            if self.ticket['Status'] in ['Working', 'Reviewing', 'Building', 'Building + Reviewing']:
+                self.ticket.set_status('Waiting')
+            if self.ticket['Status'] == 'Waiting':
+                self.ticket.set_status('Ready')
+
+        # Relink old children in progress.
         for code in Ticket.all_codes():
             ticket = self.get_ticket(code)
-            if ticket['Base'] == self.ticket['Branch']:
+            if ticket['Base'] == self.ticket['Branch'] and ticket['Status'] != 'Done':
                 new_base = self.ticket['Base']
                 if not new_base:
                     new_base = QSettings.BASE_BRANCH
                 ticket['Base'] = new_base
                 ticket.save()
 
-        if self.opts.get('force', False):
-            if self.ticket['Status'] == 'Started':
-                self.ticket.set_status('Working')
-            if self.ticket['Status'] == 'Working':
-                self.ticket.set_status('Waiting')
-            if self.ticket['Status'] == 'Waiting':
-                self.ticket.set_status('Ready')
         self.ticket.set_status('Done')
         self.app.done_work_on_ticket(self.ticket)
         self.ticket.save()

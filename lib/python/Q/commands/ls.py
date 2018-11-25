@@ -99,7 +99,6 @@ class CommandLs(Command):
             if self.ticket.finished():
                 done.append(self.ticket)
                 if (self.ticket.code == current):
-                    print self.ticket
                     done_but_current.append(self.ticket)
             else:
                 working.append(self.ticket)
