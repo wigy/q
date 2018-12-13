@@ -12,6 +12,8 @@ class QCache:
 
     @classmethod
     def get(cls, id, fn):
+        if not QSettings.OFFLINE_MODE:
+            return None
         if QCache.cache is None:
             QCache.load()
         if id not in QCache.cache or (time.time() - QCache.cache[id]['time']) / 60 > int(QSettings.CACHING_TIME_MIN):

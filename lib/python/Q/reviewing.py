@@ -379,7 +379,11 @@ class ReviewByBitbucket(ReviewMixin):
             "close_source_branch": False
         }
         resp = Requests()(url, post=out, auth=self._review_auth())
-        data = resp.json()
+        try:
+            data = resp.json()
+        except simplejson.errors.JSONDecodeError:
+            raise QError("Failed to parse response: " + repr(resp))
+
         if data['type'] == 'error':
             raise QError('Error: %r', data)
         diff = data['links']['diff']['href']
