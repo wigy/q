@@ -12,7 +12,7 @@ class QCache:
 
     @classmethod
     def get(cls, id, fn):
-        if not QSettings.OFFLINE_MODE:
+        if QSettings.OFFLINE_MODE:
             return None
         if QCache.cache is None:
             QCache.load()

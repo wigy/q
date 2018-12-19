@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import simplejson
 
 from .settings import QSettings
 from .error import QError

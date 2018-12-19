@@ -15,6 +15,7 @@ class CommandDone(AutoGoCommand):
         """
         usage: q done [<code>] [--force]
         """
+        self.ticket.refresh()
         if self.opts.get('force', False):
             if self.ticket['Status'] == 'Started':
                 self.ticket.set_status('Working')
