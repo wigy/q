@@ -236,6 +236,7 @@ class Ticket:
         path = self.path('README')
         self.wr("Saving ticket in '%s'.", path)
         QFile(path).save(self.data, self.all_keys())
+        self.save_settings()
 
     def all_keys(self):
         """
@@ -484,3 +485,7 @@ class Ticket:
             else:
                 ret += " Review:"+self['Review Result']
         return ret
+
+    def save_settings(self):
+        settings = open(QSettings.find(), 'r').read()
+        open(self.path() + '/.q', 'w').write(settings)
