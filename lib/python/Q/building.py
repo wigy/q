@@ -82,8 +82,13 @@ class BuildByBamboo(BuildMixin):
         for plan in builds.keys():
             total += 1
             url = QSettings.BAMBOO_URL + "rest/api/latest/result/%s/%s.json" % (plan, builds[plan])
-            resp = requests.get(url, auth=self._build_auth(), verify=False)
-            data = resp.json()
+            try:
+                resp = requests.get(url, auth=self._build_auth(), verify=False)
+                data = resp.json()
+            except Exception, e:
+                print resp
+                print e
+                raise QError('Getting status failed.')
             state = data['state']
             if state == 'Successful':
                 success += 1
