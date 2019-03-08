@@ -83,6 +83,8 @@ class QSettings:
     LOBBY_BRANCH = 'master'
     # If set, do not do any network queries.
     OFFLINE_MODE = False
+    # Name of the branch we merge tickets with merge releasing.
+    RELEASE_BRANCH = None
     # URL of the server to be used for reviewing.
     REVIEW_SERVER = None
     # Name of the repository to post review requests.

@@ -9,7 +9,7 @@ from .reviewing import ReviewByReviewBoard, ReviewByGerrit, ReviewByVSTS, Review
 from .testing import TestingByNose, TestingByShellCommands
 from .database import DatabaseByDjango
 from .ticketing import TicketingByTrac, ManualTicketing, TicketingByVSTS, TicketingByAtlassian
-from .releasing import NoReleasing, ReleasingByGerrit, ReleasingByBamboo
+from .releasing import NoReleasing, ReleasingByGerrit, ReleasingByBamboo, ReleasingByMerge
 from .command import Command
 from .ticket import Ticket
 

@@ -13,6 +13,12 @@ class ReviewMixin:
     Base class for review implementations.
     """
 
+    def review_is_auto(self):
+        """
+        Check of the review success is automatic.
+        """
+        return False
+
     def review_start(self, ticket, file):
         """
         Resolve review ID for the ticket and launch it.
@@ -61,6 +67,9 @@ class NoReview(ReviewMixin):
     """
     Automatically successful review.
     """
+    def review_is_auto(self):
+        return True
+
     def review_start(self, ticket, file):
         return 'AutoSuccess'
 
