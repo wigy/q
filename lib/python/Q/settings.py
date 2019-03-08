@@ -113,7 +113,7 @@ class QSettings:
     # User name in the ticketing system.
     TICKETING_USER = None
     # Password in the ticketing system.
-    TICKETING_PASS = None
+    TICKETING_PASSWORD = None
     # What milestone to use in Trac when new ticket has been created.
     TRAC_INITIAL_MILESTONE = None
     # What milestone to use in Trac when starting work on ticket.
