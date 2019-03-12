@@ -16,6 +16,7 @@ class CommandRelease(AutoGoCommand):
         """
         usage: q release [<code>]
         """
+        self.ticket.refresh()
         if self.ticket['Status'] != 'Ready':
             raise QError("Cannot release when ticket status is %r.", self.ticket['Status'])
         self.run_release()
