@@ -26,6 +26,7 @@ class Command:
                's' : 'show',
                't' : 'test',
                'u' : 'update',
+               'w' : 'work',
                '?' : 'help',
                }
 
@@ -182,11 +183,12 @@ class Command:
         from commands.test import CommandTest
         from commands.update import CommandUpdate
         from commands.url import CommandUrl
+        from commands.work import CommandWork
 
         for name in ['Destroy', 'Help', 'Ls', 'Show', 'Start', 'Go', 'My', 'Diff', 'Commit', 'Settings', 'Publish',
                      'Update', 'Edit', 'Backport', 'Done', 'Build', 'Review', 'Release', 'Create', 'Reopen',
                      'Cancel', 'Test', 'Find', 'Base', 'Open', 'Url', 'Last', 'Offline',
-                     'Epic']:
+                     'Epic', 'Work']:
             ret[name.lower()] = eval("Command" + name)
 
         return ret

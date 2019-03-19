@@ -10,6 +10,7 @@ from .testing import TestingByNose, TestingByShellCommands
 from .database import DatabaseByDjango
 from .ticketing import TicketingByTrac, ManualTicketing, TicketingByVSTS, TicketingByAtlassian
 from .releasing import NoReleasing, ReleasingByGerrit, ReleasingByBamboo, ReleasingByMerge
+from .timing import NoTiming, TimingByAtlassian
 from .command import Command
 from .ticket import Ticket
 
@@ -60,7 +61,7 @@ class QProject:
 # Automatically generated from `.q`.
 # Just delete this if you want to regenerate it.
 #
-class Project(QProject, APP_TICKETING, APP_RELEASING, APP_REVIEWING, APP_BUILDING, APP_TESTING):
+class Project(QProject, APP_TICKETING, APP_RELEASING, APP_REVIEWING, APP_BUILDING, APP_TESTING, APP_TIMING):
     pass
 """
             definition = definition.replace('APP_TICKETING', settings.APP_TICKETING)
@@ -68,6 +69,7 @@ class Project(QProject, APP_TICKETING, APP_RELEASING, APP_REVIEWING, APP_BUILDIN
             definition = definition.replace('APP_REVIEWING', settings.APP_REVIEWING)
             definition = definition.replace('APP_BUILDING', settings.APP_BUILDING)
             definition = definition.replace('APP_TESTING', settings.APP_TESTING)
+            definition = definition.replace('APP_TIMING', settings.APP_TIMING)
             f = open(project_path,'w')
             f.write(definition)
             f.close()

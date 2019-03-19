@@ -39,6 +39,8 @@ class Q:
     NOTE = RED
     USER = GRAY
     USER_ME = WHITE
+    TIME = YELLOW
+    DATE = CYAN
 
     prev_channel = None
     settings_loaded = False

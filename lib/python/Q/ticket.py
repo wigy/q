@@ -7,6 +7,7 @@ import readline
 import glob
 import time
 import shutil
+from time import localtime, strftime
 from distutils.dir_util import mkpath
 
 from .error import QError
@@ -245,7 +246,7 @@ class Ticket:
         return ['Title', 'Status', 'Started', 'Finished', 'Base', 'Branch',
                 'URL', 'User', 'Review', 'Review Result', 'Review ID', 'Review Info',
                 'Build Result', 'Build ID', 'Build Info', 'Dump', 'DB',
-                'Tests', 'Files', 'Notes', 'Owner', 'Ticket Info', 'Epic']
+                'Tests', 'Files', 'Notes', 'Owner', 'Ticket Info', 'Epic', 'Work']
 
     def keys(self):
         """
@@ -299,6 +300,55 @@ class Ticket:
         Check if this ticket is an epic.
         """
         return self['Epic'] == 'True' or self['Epic'] == True
+
+    def work_timing_on(self, timestamp):
+        """
+        Start work timing entry.
+        """
+        work = self['Work']
+        if work is None:
+            work = []
+        else:
+            work = work.split('\n')
+        work.append(timestamp + ' - ????-??-?? ??:??:??')
+        self['Work'] = '\n'.join(work)
+
+    def work_timing_off(self, timestamp):
+        """
+        Stop work timing entry.
+        """
+        work = self['Work']
+        if work is None:
+            work = []
+        else:
+            work = work.split('\n')
+        if not len(work):
+            raise QError('Ticket does not have any work log to stop.')
+        entry = work[-1]
+        placeholder = '????-??-?? ??:??:??'
+        n = entry.find(placeholder)
+        if n < 0:
+            raise QError('Ticket does not have any open timestamp to close.')
+        entry = entry[0: n] + timestamp + entry[n + len(placeholder):]
+        work[-1] = entry
+        self['Work'] = '\n'.join(work)
+
+    def work_timing(self):
+        """
+        Parse work timing data and convert to entries.
+        """
+        from .timing import WorkEntry
+        work = self['Work']
+        if work is None:
+            work = []
+        else:
+            work = work.split('\n')
+        ret = []
+        for w in work:
+            e = WorkEntry.from_str(w)
+            e.code = self.code
+            ret.append(e)
+        return ret
 
     @classmethod
     def branch_number_of(self, name):

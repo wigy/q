@@ -15,6 +15,7 @@ class CommandDone(AutoGoCommand):
         """
         usage: q done [<code>] [--force]
         """
+        from ..q import Q
         self.ticket.refresh()
         if self.opts.get('force', False):
             if self.ticket['Status'] == 'Started':
@@ -35,5 +36,6 @@ class CommandDone(AutoGoCommand):
                 ticket.save()
 
         self.ticket.set_status('Done')
+        Q('work','push')
         self.app.done_work_on_ticket(self.ticket)
         self.ticket.save()

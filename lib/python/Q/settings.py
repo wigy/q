@@ -23,6 +23,7 @@ class QSettings:
     APP_REVIEWING = 'NoReview'
     APP_BUILDING = 'NoBuild'
     APP_TESTING = 'TestingByShellCommands'
+    APP_TIMING = 'NoTiming'
     # Root directory of the application git tree.
     APPDIR = None
     # Path to the settings (filled automatically).
