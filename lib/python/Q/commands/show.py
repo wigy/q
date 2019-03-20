@@ -18,6 +18,9 @@ class CommandShow(AutoLoadCommand):
                <code> - A ticket number.
         """
         from ..q import Q
+        if not self.ticket.code:
+            self.wr('No ticket')
+            return
         self.wr("Path: "+Q.URL+self.ticket.path('README')+Q.END)
         file = self.ticket.path('latest.diff')
         if os.path.isfile(file):

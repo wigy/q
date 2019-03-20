@@ -35,7 +35,12 @@ class CommandDone(AutoGoCommand):
                 ticket['Base'] = new_base
                 ticket.save()
 
-        self.ticket.set_status('Done')
-        Q('work','push')
         self.app.done_work_on_ticket(self.ticket)
+        if self.app.timing_is_in_use():
+            if self.ticket.work_timing_is_on():
+                Q('work','off')
+                self.load(self.ticket.code)
+            Q('work','push')
+            self.load(self.ticket.code)
+        self.ticket.set_status('Done')
         self.ticket.save()

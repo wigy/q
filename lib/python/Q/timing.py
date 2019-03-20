@@ -11,6 +11,7 @@ from .helper import Curl, Requests
 class WorkEntry:
 
     PLACEHOLDER = '????-??-?? ??:??:??'
+    JOIN_LIMIT_MIN = 15
 
     """
     Storage for work log entry.
@@ -22,7 +23,7 @@ class WorkEntry:
         self.text = text
 
     def __repr__(self):
-        return '%s - %s %s %s' % (self.start, self.stop or WorkEntry.PLACEHOLDER, self.code, self.text)
+        return '<Q.WorkEntry %s - %s %s %s>' % (self.start, self.stop or WorkEntry.PLACEHOLDER, self.code, self.text)
 
     def human(self):
         """
@@ -39,18 +40,96 @@ class WorkEntry:
         return ret
 
     def seconds(self):
-        t1 = datetime.datetime.strptime(self.start, "%Y-%m-%d %H:%M:%S")
+        """
+        How many seconds of work.
+        """
+        t1 = datetime.datetime.strptime(self.start, '%Y-%m-%d %H:%M:%S')
         if self.stop:
-            t2 = datetime.datetime.strptime(self.stop, "%Y-%m-%d %H:%M:%S")
+            t2 = datetime.datetime.strptime(self.stop, '%Y-%m-%d %H:%M:%S')
         else:
             t2 = datetime.datetime.now()
         return (t2 - t1).total_seconds()
 
     def minutes(self):
+        """
+        How many minutes of work.
+        """
         return self.seconds() / 60
 
     def get_start_stamp(self):
+        """
+        Format starting time to ISO-format.
+        """
         return self.start.replace(' ', 'T') + '.000+0000'
+
+    def is_running(self):
+        """
+        Check if there is stopping time stamp.
+        """
+        return self.stop is None
+
+    def now(self):
+        """
+        Current time.
+        """
+        t =datetime.datetime.now()
+        return datetime.datetime.strftime(t, '%H:%M:%S')
+
+    def today(self):
+        """
+        Current date.
+        """
+        t =datetime.datetime.now()
+        return datetime.datetime.strftime(t, '%Y-%m-%d')
+
+    def is_today(self):
+        """
+        Check if the starting time is today.
+        """
+        return self.today() == self.start[0:10]
+
+    def add_comment(self, comment):
+        """
+        Append a comment.
+        """
+        if self.text:
+            self.text += ' '
+            self.text += comment
+        else:
+            self.text = comment
+
+    def to_ticket(self):
+        """
+        Convert to string to be used in ticket data.
+        """
+
+        return '%s - %s %s' % (self.start, self.stop or WorkEntry.PLACEHOLDER, self.text)
+
+    def can_merge(self, entry):
+        """
+        Check if it makes sense to combine other work entry.
+        """
+        if self.minutes() < WorkEntry.JOIN_LIMIT_MIN:
+            return True
+        if entry.minutes() < WorkEntry.JOIN_LIMIT_MIN:
+            return True
+        return False
+
+    def merge(self, entry):
+        """
+        Merge another enrty to this.
+        """
+        self.start = min(self.start, entry.start)
+        if self.stop is None or entry.stop is None:
+            self.stop = None
+        else:
+            self.stop = max(self.stop, entry.stop)
+        texts = []
+        if self.text is not None:
+            texts.append(self.text)
+        if entry.text is not None:
+            texts.append(entry.text)
+        self.text = ' '.join(texts)
 
     @classmethod
     def from_str(cls, s):
@@ -86,7 +165,6 @@ class TimingMixin:
             self.cmd.load(code)
             TimingMixin.log += self.cmd.ticket.work_timing()
         TimingMixin.log.sort(key = lambda w: w.start)
-        print TimingMixin.log
 
     def timing_load(self):
         try:
@@ -113,11 +191,36 @@ class TimingMixin:
         self.timing_load()
         return TimingMixin.log
 
+    def timing_get_the_latest(self):
+        """
+        Get the last recorded timing entry or empty record if none.
+        """
+        self.timing_load()
+        if len(TimingMixin.log):
+            return TimingMixin.log[-1]
+        return WorkEntry()
+
+    def timing_drop_the_latest(self):
+        """
+        Remove the last entry.
+        """
+        self.timing_load()
+        if len(TimingMixin.log):
+            TimingMixin.log.pop()
+            self.timing_save()
+            print "TODO: Does saving timing log after dropping last work?"
+
     def _parse_timing_date(self, time):
         if re.match('^\d?\d:\d\d$', time):
             h, m = time.split(':')
             day = strftime('%Y-%m-%d', localtime())
             date = '%s %02d:%02d:00' % (day, int(h), int(m))
+        elif re.match('^\d?\d:\d\d:\d\d$', time):
+            h, m, s = time.split(':')
+            day = strftime('%Y-%m-%d', localtime())
+            date = '%s %02d:%02d:00' % (day, int(h), int(m))
+        elif re.match('^\d\d\d\d-\d\d-\d\d \d?\d:\d\d:\d\d$', time):
+            date = time
         else:
             raise QError('Invalid time %r' % time)
         return date
@@ -142,6 +245,18 @@ class TimingMixin:
         ticket.save()
         self.timing_load()
         TimingMixin.log[-1].stop = date
+        self.timing_save()
+
+    def timing_comment_for_ticket(self, ticket, comment):
+        """
+        Append the comment for the latest work entry.
+        """
+        work = self.timing_get_the_latest()
+        if ticket.code != work.code:
+            raise QError('Cannot comment ticket work log that is not the latest work.')
+        ticket.work_timing_comment(comment)
+        ticket.save()
+        work.add_comment(comment)
         self.timing_save()
 
     def timing_push_ticket(self, ticket):

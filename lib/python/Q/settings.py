@@ -129,6 +129,12 @@ class QSettings:
     USE_SUBMODULES = False
     # Directory to store local ticket data.
     WORKDIR = None
+    # Timestamp of work starting time for work log purposes.
+    WORK_START = '09:00:00'
+    # Timestamp of work finishing time for work log purposes.
+    WORK_END = '17:00:00'
+    # How many working hours during the day.
+    WORK_HOURS = 7.5
     # Name of the VSTS instance, i.e. hostname of visualstudio.com.
     VSTS_INSTANCE = None
     # Name (full name and email) to be used when assigning ownership for things.

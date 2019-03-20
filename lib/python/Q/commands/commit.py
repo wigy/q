@@ -50,5 +50,10 @@ class CommandCommit(AutoGoCommand):
             if self.ticket['Review Status']:
                 self.ticket['Review Status'] = 'Need Update'
             self.ticket['Files'] = files
-            self.ticket.save()
+            if self.app.timing_is_in_use():
+                self.app.timing_comment_for_ticket(self.ticket, comments)
+                self.ticket.save()
+                Q('work', 'switch')
+            else:
+                self.ticket.save()
         Q('my','apply')

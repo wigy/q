@@ -319,11 +319,9 @@ class Ticket:
         """
         work = self['Work']
         if work is None:
-            work = []
+            raise QError('Ticket does not have any work log to stop.')
         else:
             work = work.split('\n')
-        if not len(work):
-            raise QError('Ticket does not have any work log to stop.')
         entry = work[-1]
         placeholder = '????-??-?? ??:??:??'
         n = entry.find(placeholder)
@@ -331,6 +329,21 @@ class Ticket:
             raise QError('Ticket does not have any open timestamp to close.')
         entry = entry[0: n] + timestamp + entry[n + len(placeholder):]
         work[-1] = entry
+        self['Work'] = '\n'.join(work)
+
+    def work_timing_comment(self, comment):
+        """
+        Append the comment for the latest work timing entry.
+        """
+        from .timing import WorkEntry
+        work = self['Work']
+        if work is None:
+            raise QError('Ticket does not have any work log to comment.')
+        else:
+            work = work.split('\n')
+        e = WorkEntry.from_str(work[-1])
+        e.add_comment(comment)
+        work[-1] = e.to_ticket()
         self['Work'] = '\n'.join(work)
 
     def work_timing(self):
@@ -349,6 +362,23 @@ class Ticket:
             e.code = self.code
             ret.append(e)
         return ret
+
+    def work_timing_merge(self):
+        """
+        Merge last two work timing entries.
+        """
+        work = self.work_timing()
+        work[-2].merge(work[-1])
+        work.pop()
+        self['Work'] = '\n'.join(map(lambda x: x.to_ticket(), work))
+
+    def work_timing_is_on(self):
+        """
+        Check if ticket work timer is on.
+        """
+        work = self.work_timing()
+        if len(work):
+            return work[-1].is_running()
 
     @classmethod
     def branch_number_of(self, name):

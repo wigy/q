@@ -23,6 +23,7 @@ class CommandStart(Command):
 
                If title is not given, then data is fetched from the remote ticketing.
         """
+        from ..q import Q
         if not self.code:
             raise QError("No code given for the ticket.")
 
@@ -69,3 +70,6 @@ class CommandStart(Command):
 
         # Go to the branch.
         Git()('checkout '+self.ticket.branch_name())
+
+        # Start working.
+        Q('work', 'switch')

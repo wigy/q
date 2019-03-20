@@ -115,6 +115,6 @@ class CommandLs(Command):
             elif len(done_but_current):
                 self.show_ticket_tree(done_but_current, current=current, channel='Old Tickets', modified=modified)
 
-        Q('work')
+        Q('work', '--today')
         if current:
             Q('my','apply')
