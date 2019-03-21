@@ -17,6 +17,8 @@ class CommandRelease(AutoGoCommand):
         usage: q release [<code>]
         """
         self.ticket.refresh()
+        if self.ticket['Status'] == 'Started':
+            self.ticket.set_status('Working')
         if self.ticket['Review Result'] is None and self.app.review_is_auto():
             self.Q('review', 'make')
         if self.ticket['Build Result'] is None and self.app.build_is_auto():

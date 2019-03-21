@@ -104,9 +104,9 @@ class CommandWork(AutoLoadCommand):
         """
         log = self.app.timing_get_full_list()
         if len(log) < 2:
-            raise QError('Not enough work log entries to merge.')
-        if log[-1].code != log[-2].code:
-            raise QError('Last two work entries must be from the same tickets in order to merge.')
+            return
+        if not log[-2].can_merge(log[-1]):
+            raise QError('Cannot merge latest two work entries.')
         self.ticket.work_timing_merge()
         self.app.timing_drop_the_latest()
         self.ticket.save()

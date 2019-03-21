@@ -109,6 +109,10 @@ class WorkEntry:
         """
         Check if it makes sense to combine other work entry.
         """
+        if self.code != entry.code:
+            return False
+        if self.start[0:10] != entry.start[0:10]:
+            return False
         if self.minutes() < WorkEntry.JOIN_LIMIT_MIN:
             return True
         if entry.minutes() < WorkEntry.JOIN_LIMIT_MIN:
