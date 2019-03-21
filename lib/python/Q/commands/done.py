@@ -40,6 +40,11 @@ class CommandDone(AutoGoCommand):
             if self.ticket.work_timing_is_on():
                 Q('work','off')
                 self.load(self.ticket.code)
+                work = self.ticket.work_timing()
+                if work[-1].minutes() < 15:
+                    self.wr('Merging small work timing entry to the previous.')
+                    Q('work', 'merge')
+                    self.load(self.ticket.code)
             Q('work','push')
             self.load(self.ticket.code)
         self.ticket.set_status('Done')
