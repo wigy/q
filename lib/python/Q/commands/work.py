@@ -77,6 +77,7 @@ class CommandWork(AutoLoadCommand):
             self.wr(Q.TIME + time[0:5] + ' - ' + time2[0:5] + ' ' +  Q.END + e.code + '\t' + e.human() + '  ' + text)
             sum += e.minutes() / 60
         show_sum()
+        left = float(QSettings.WORK_HOURS) - sum
         if left:
             self.wr(Q.GREEN + "              Done: %s" % str(datetime.now() + timedelta(hours=left))[11:11 + 5] + Q.END)
 

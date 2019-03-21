@@ -136,6 +136,15 @@ class Command:
         self.ticket = old
         return ret
 
+    def Q(self, *args):
+        """
+        Call Q and reload the ticket.
+        """
+        from .q import Q
+        self.ticket.save()
+        Q(*args)
+        self.load(self.ticket.code)
+
     @staticmethod
     def find(cmd):
         """

@@ -15,7 +15,6 @@ class CommandDone(AutoGoCommand):
         """
         usage: q done [<code>] [--force]
         """
-        from ..q import Q
         self.ticket.refresh()
         if self.opts.get('force', False):
             if self.ticket['Status'] == 'Started':
@@ -24,6 +23,8 @@ class CommandDone(AutoGoCommand):
                 self.ticket.set_status('Waiting')
             if self.ticket['Status'] == 'Waiting':
                 self.ticket.set_status('Ready')
+
+        self.ticket.set_status('Done')
 
         # Relink old children in progress.
         for code in Ticket.all_codes():
@@ -35,17 +36,10 @@ class CommandDone(AutoGoCommand):
                 ticket['Base'] = new_base
                 ticket.save()
 
+        # Finish it.
         self.app.done_work_on_ticket(self.ticket)
         if self.app.timing_is_in_use():
             if self.ticket.work_timing_is_on():
-                Q('work','off')
-                self.load(self.ticket.code)
-                work = self.ticket.work_timing()
-                if work[-1].minutes() < 15:
-                    self.wr('Merging small work timing entry to the previous.')
-                    Q('work', 'merge')
-                    self.load(self.ticket.code)
-            Q('work','push')
-            self.load(self.ticket.code)
-        self.ticket.set_status('Done')
+                self.Q('work','off')
+            self.Q('work','push')
         self.ticket.save()

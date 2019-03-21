@@ -20,6 +20,12 @@ class BuildMixin:
     Base class for build mixins.
     """
 
+    def build_is_auto(self):
+        """
+        Check of the build success is automatic.
+        """
+        return False
+
     def build_start(self, ticket, gitid):
         """
         Build the code based on git-commit id and return build_id.
@@ -43,6 +49,9 @@ class NoBuild(BuildMixin):
     """
     No building. Automatically success.
     """
+
+    def build_is_auto(self):
+        return True
 
     def build_start(self, ticket, gitid):
         return 'AutoSuccess'
