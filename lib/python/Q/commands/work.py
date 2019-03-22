@@ -11,6 +11,7 @@ class CommandWork(AutoLoadCommand):
     Manage work log.
     """
     param_aliases = {
+                     'c' : 'comment',
                      'm' : 'merge',
                      's' : 'switch',
                      'p' : 'push'
@@ -18,7 +19,7 @@ class CommandWork(AutoLoadCommand):
 
     def run(self):
         """
-        usage: q work [--today|on [<time>]|off [<time>]|push|switch|merge]
+        usage: q work [--today|on [<time>]|off [<time>]|push|switch|merge|comment]
         """
         if not self.app.timing_is_in_use():
             return
@@ -40,6 +41,8 @@ class CommandWork(AutoLoadCommand):
                 self.run_switch()
             elif self.args[0] == 'merge':
                 self.run_merge()
+            elif self.args[0] == 'comment':
+                self.run_comment()
             else:
                 raise QError('Invalid argument.')
 
@@ -57,7 +60,7 @@ class CommandWork(AutoLoadCommand):
             self.wr(Q.GREEN + "              Total: %.2fh" % sum + Q.END)
             left = float(QSettings.WORK_HOURS) - sum
             if left:
-                self.wr(Q.GREEN + "              Left: %.2fh" % left + Q.END)
+                self.wr(Q.GREEN + "              Left: %.2fh (%d min)" % (left, left * 60) + Q.END)
 
         for e in log:
             date, time = e.start.split(' ')
@@ -86,7 +89,7 @@ class CommandWork(AutoLoadCommand):
         Turn work timer on.
         """
         self.app.timing_on_for_ticket(self.ticket, time)
-        self.run_show()
+        self.run_show(today=True)
 
     def run_off(self, time):
         """
@@ -96,7 +99,7 @@ class CommandWork(AutoLoadCommand):
         if len(work) >= 2 and work[-2].can_merge(work[-1]):
             self.run_merge()
         self.app.timing_off_for_ticket(self.ticket, time)
-        self.run_show()
+        self.run_show(today=True)
 
     def run_merge(self):
         """
@@ -147,3 +150,15 @@ class CommandWork(AutoLoadCommand):
             else:
                 # Assume morning and start fresh new day.
                 self.app.timing_on_for_ticket(self.ticket, QSettings.WORK_START)
+
+    def run_comment(self):
+        """
+        Append to the comment of the last entry.
+        """
+        work = self.app.timing_get_the_latest()
+        if work is None:
+            raise QError('No work timing entries.')
+        comment = ' '.join(self.args[1:])
+        if not len(comment):
+            raise QError('Empty comment.')
+        self.app.timing_comment_for_ticket(self.ticket, comment)

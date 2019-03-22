@@ -202,7 +202,7 @@ class TimingMixin:
         self.timing_load()
         if len(TimingMixin.log):
             return TimingMixin.log[-1]
-        return WorkEntry()
+        return None
 
     def timing_drop_the_latest(self):
         """
