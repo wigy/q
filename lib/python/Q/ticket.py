@@ -368,7 +368,16 @@ class Ticket:
         Merge last two work timing entries.
         """
         work = self.work_timing()
+        print work
         work[-2].merge(work[-1])
+        work.pop()
+        self['Work'] = '\n'.join(map(lambda x: x.to_ticket(), work))
+
+    def work_timing_drop(self):
+        """
+        Drop the last work timing entry.
+        """
+        work = self.work_timing()
         work.pop()
         self['Work'] = '\n'.join(map(lambda x: x.to_ticket(), work))
 

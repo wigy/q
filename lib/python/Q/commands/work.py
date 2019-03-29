@@ -12,6 +12,7 @@ class CommandWork(AutoLoadCommand):
     """
     param_aliases = {
                      'c' : 'comment',
+                     'd' : 'drop',
                      'm' : 'merge',
                      's' : 'switch',
                      'p' : 'push'
@@ -19,7 +20,7 @@ class CommandWork(AutoLoadCommand):
 
     def run(self):
         """
-        usage: q work [--today|on [<time>]|off [<time>]|push|switch|merge|comment]
+        usage: q work [--today|on [<time>]|off [<time>]|push|switch|merge|comment|drop]
         """
         if not self.app.timing_is_in_use():
             return
@@ -43,6 +44,8 @@ class CommandWork(AutoLoadCommand):
                 self.run_merge()
             elif self.args[0] == 'comment':
                 self.run_comment()
+            elif self.args[0] == 'drop':
+                self.run_drop()
             else:
                 raise QError('Invalid argument.')
 
@@ -108,11 +111,21 @@ class CommandWork(AutoLoadCommand):
         log = self.app.timing_get_full_list()
         if len(log) < 2:
             return
+        self.load(log[-1].code)
         if not log[-2].can_merge(log[-1]):
             raise QError('Cannot merge latest two work entries.')
         self.ticket.work_timing_merge()
         self.app.timing_drop_the_latest()
         self.ticket.save()
+
+    def run_drop(self):
+        """
+        Drop the last entry.
+        """
+        log = self.app.timing_get_full_list()
+        if len(log) < 1:
+            raise QError('No work entries.')
+        self.app.timing_drop_latest(self.ticket)
 
     def run_push(self):
         """

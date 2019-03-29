@@ -263,6 +263,15 @@ class TimingMixin:
         work.add_comment(comment)
         self.timing_save()
 
+    def timing_drop_latest(self, ticket):
+        """
+        Drop the latest work entry.
+        """
+        ticket.work_timing_drop()
+        ticket.save()
+        TimingMixin.log.pop()
+        self.timing_save()
+
     def timing_push_ticket(self, ticket):
         """
         Push the timing data to the remote.
