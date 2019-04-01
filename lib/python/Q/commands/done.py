@@ -41,5 +41,8 @@ class CommandDone(AutoGoCommand):
         if self.app.timing_is_in_use():
             if self.ticket.work_timing_is_on():
                 self.Q('work','off')
+            log = self.ticket.work_timing()
+            if len(log) > 1 and log[-2].can_merge(log[-1]):
+                self.Q('work','merge')
             self.Q('work','push')
         self.ticket.save()
