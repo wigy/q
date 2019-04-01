@@ -99,8 +99,6 @@ class CommandWork(AutoLoadCommand):
         Turn work timer off.
         """
         work = self.ticket.work_timing()
-        if len(work) >= 2 and work[-2].can_merge(work[-1]):
-            self.run_merge()
         self.app.timing_off_for_ticket(self.ticket, time)
         self.run_show(today=True)
 
