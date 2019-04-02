@@ -113,8 +113,8 @@ class CommandWork(AutoLoadCommand):
         if not log[-2].can_merge(log[-1]):
             raise QError('Cannot merge latest two work entries.')
         self.ticket.work_timing_merge()
-        self.app.timing_drop_the_latest()
         self.ticket.save()
+        self.app.timing_rebuild_cache()
 
     def run_drop(self):
         """
@@ -123,7 +123,9 @@ class CommandWork(AutoLoadCommand):
         log = self.app.timing_get_full_list()
         if len(log) < 1:
             raise QError('No work entries.')
-        self.app.timing_drop_latest(self.ticket)
+        self.load(log[-1].code)
+        self.ticket.work_timing_drop()
+        self.app.timing_rebuild_cache()
 
     def run_push(self):
         """

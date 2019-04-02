@@ -204,16 +204,6 @@ class TimingMixin:
             return TimingMixin.log[-1]
         return None
 
-    def timing_drop_the_latest(self):
-        """
-        Remove the last entry.
-        """
-        self.timing_load()
-        if len(TimingMixin.log):
-            TimingMixin.log.pop()
-            self.timing_save()
-            print "TODO: Does saving timing log after dropping last work?"
-
     def _parse_timing_date(self, time):
         if re.match('^\d?\d:\d\d$', time):
             h, m = time.split(':')
@@ -263,13 +253,11 @@ class TimingMixin:
         work.add_comment(comment)
         self.timing_save()
 
-    def timing_drop_latest(self, ticket):
+    def timing_rebuild_cache(self):
         """
-        Drop the latest work entry.
+        Drop cache and rebuild from tickets.
         """
-        ticket.work_timing_drop()
-        ticket.save()
-        TimingMixin.log.pop()
+        self.read_from_tickets()
         self.timing_save()
 
     def timing_push_ticket(self, ticket):
