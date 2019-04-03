@@ -125,6 +125,7 @@ class CommandWork(AutoLoadCommand):
             raise QError('No work entries.')
         self.load(log[-1].code)
         self.ticket.work_timing_drop()
+        self.ticket.save()
         self.app.timing_rebuild_cache()
 
     def run_push(self):
