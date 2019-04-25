@@ -64,7 +64,6 @@ class CommandWork(AutoLoadCommand):
             left = float(QSettings.WORK_HOURS) - sum
             if left:
                 self.wr(Q.GREEN + "              Left: %.2fh (%d min)" % (left, left * 60) + Q.END)
-
         for e in log:
             date, time = e.start.split(' ')
             if today and date != log[0].today():

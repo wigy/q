@@ -352,7 +352,7 @@ class Ticket:
         """
         from .timing import WorkEntry
         work = self['Work']
-        if work is None:
+        if work is None or work == '':
             work = []
         else:
             work = work.split('\n')
