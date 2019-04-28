@@ -100,7 +100,9 @@ class CommandReview(AutoGoCommand):
         self.app.start_review_on_ticket(self.ticket, self.app.review_url(rid))
         Q('my','apply')
         self.wr("Review is ready!")
-        self.wr("Please check it out and fine tune if needed: " + Q.URL + self.app.review_url(rid) + Q.END)
+        url = self.app.review_url(rid)
+        if url is not None:
+            self.wr("Please check it out and fine tune if needed: " + Q.URL + url + Q.END)
 
     def _make_diff(self):
         merge_base = self.ticket.merge_base()
@@ -120,8 +122,11 @@ class CommandReview(AutoGoCommand):
         file = self._make_diff()
         self.app.review_update(self.ticket, file)
         Q('my','apply')
+        self.ticket.save()
         self.wr("Review is updated!")
-        self.wr("Please check it out and fine tune if needed: " + Q.URL + self.app.review_url(rid) + Q.END)
+        url = self.app.review_url(rid)
+        if url is not None:
+            self.wr("Please check it out and fine tune if needed: " + Q.URL + url + Q.END)
 
     def run_success(self):
         self.wr("Marking the ticket as successfully reviewed.")

@@ -83,6 +83,39 @@ class NoReview(ReviewMixin):
         return
 
 
+class ReviewByLocalDiff(ReviewMixin):
+    """
+    Show diff and ask yes/no.
+    """
+    def review_is_auto(self):
+        return False
+
+    def review_start(self, ticket, file):
+        self.cmd.Q('diff', 'all')
+        print
+        print "Are the changes acceptable (y/N)?"
+        print
+        result = raw_input()
+        if result == 'y':
+            return 'accepted'
+        return 'not accepted'
+
+    def review_update(self, ticket, file):
+        rid = self.review_start(ticket, file)
+        ticket['Review ID'] = rid
+
+    def review_status(self, review_id):
+        if review_id == 'accepted':
+            return 'Success'
+        return 'Fail'
+
+    def review_url(self, review_id):
+        return None
+
+    def review_update_build(self, ticket):
+        return
+
+
 class ReviewByReviewBoard(ReviewMixin):
     """
     Implementation for Review Board by Beanbag Inc.

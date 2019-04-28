@@ -5,7 +5,7 @@ import re
 from .error import QError
 from .settings import QSettings
 from .building import NoBuild, BuildByBamboo
-from .reviewing import ReviewByReviewBoard, ReviewByGerrit, ReviewByVSTS, ReviewByBitbucket, NoReview
+from .reviewing import ReviewByReviewBoard, ReviewByGerrit, ReviewByVSTS, ReviewByBitbucket, NoReview, ReviewByLocalDiff
 from .testing import TestingByNose, TestingByShellCommands
 from .database import DatabaseByDjango
 from .ticketing import TicketingByTrac, ManualTicketing, TicketingByVSTS, TicketingByAtlassian
