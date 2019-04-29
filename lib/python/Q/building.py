@@ -26,6 +26,12 @@ class BuildMixin:
         """
         return False
 
+    def build_needs_publish(self):
+        """
+        If True, run publish before starting the build.
+        """
+        return True
+
     def build_start(self, ticket, gitid):
         """
         Build the code based on git-commit id and return build_id.
@@ -52,6 +58,9 @@ class NoBuild(BuildMixin):
 
     def build_is_auto(self):
         return True
+
+    def build_needs_publish(self):
+        return False
 
     def build_start(self, ticket, gitid):
         return 'AutoSuccess'

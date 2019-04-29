@@ -80,7 +80,8 @@ class CommandBuild(AutoGoCommand):
 
     def _do_build(self):
         from ..q import Q
-        Q('publish')
+        if self.app.build_needs_publish():
+            Q('publish')
         cid = Git().latest_commit()
         bid = self.app.build_start(self.ticket, cid)
         if bid is None:
