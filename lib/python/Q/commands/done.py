@@ -45,4 +45,5 @@ class CommandDone(AutoGoCommand):
             log = self.ticket.work_timing()
             if len(log) > 1 and log[-2].can_merge(log[-1]):
                 self.Q('work','merge')
+                self.Q('work','push') # TODO: Needed since merge still can crash. Fix it.
         self.ticket.save()
