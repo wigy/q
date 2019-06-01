@@ -60,7 +60,11 @@ class WorkEntry:
         """
         Format starting time to ISO-format.
         """
-        return self.start.replace(' ', 'T') + '.000+0000'
+        import time
+        tz = -(time.timezone / 3600.0)
+        if time.localtime( ).tm_isdst > 0:
+            tz += 1
+        return self.start.replace(' ', 'T') + ('.000+%02d00' % tz)
 
     def is_running(self):
         """
