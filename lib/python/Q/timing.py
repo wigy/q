@@ -175,6 +175,10 @@ class TimingMixin:
         TimingMixin.log.sort(key = lambda w: w.start)
 
     def timing_load(self):
+        # TODO: Cache does not work correctly with multiple project yet.
+        self.read_from_tickets()
+        self.timing_save()
+        return
         try:
             with open(TimingMixin.path(), 'rb') as input:
                 TimingMixin.log = pickle.load(input)
@@ -209,9 +213,9 @@ class TimingMixin:
         """
         Get the last recorded timing entry or empty record if none.
         """
-        self.timing_load()
-        if len(TimingMixin.log):
-            return TimingMixin.log[-1]
+        work = self.timing_get_full_list()
+        if len(work):
+            return work[-1]
         return None
 
     def _parse_timing_date(self, time):
@@ -257,7 +261,7 @@ class TimingMixin:
         """
         work = self.timing_get_the_latest()
         if ticket.code != work.code:
-            raise QError('Cannot comment ticket work log that is not the latest work.')
+            raise QError('Cannot comment ticket ' + ticket.code + ' work log that is not the latest work ' + work.code + '.')
         ticket.work_timing_comment(comment)
         ticket.save()
         work.add_comment(comment)

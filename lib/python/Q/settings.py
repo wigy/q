@@ -226,3 +226,16 @@ class QSettings:
         Restore all settings after visit is done.
         """
         cls.pop()
+
+    @classmethod
+    def find_by_code(cls, code):
+        """
+        Find the project and load its settings by looking into ticket code.
+        """
+        for p in cls.visit_all():
+            QSettings.load(p)
+            if re.match(QSettings.TICKET_NUMBER_REGEX, code):
+                settings_stack.pop()
+                return True
+        cls.visit_done()
+        return False

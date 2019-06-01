@@ -18,6 +18,14 @@ class CommandWork(AutoLoadCommand):
                      'p' : 'push'
                     }
 
+    def __switch_latest(self):
+        """
+        Helper to fetch the latest project and ticket by time log.
+        """
+        work = self.app.timing_get_the_latest()
+        if QSettings.find_by_code(work.code):
+            self.load(work.code)
+
     def run(self):
         """
         usage: q work [--today|on [<time>]|off [<time>]|push|switch|merge|comment|drop]
@@ -28,23 +36,28 @@ class CommandWork(AutoLoadCommand):
             today = 'today' in self.opts and self.opts['today']
             self.run_show(today=today)
         elif len(self.args) >= 1:
-            if self.ticket.code is None:
-                raise QError('No ticket.')
             if self.args[0] == 'on':
+                if self.ticket.code is None:
+                    raise QError('No ticket.')
                 time = self.args[1] if len(self.args) >= 2 else strftime('%H:%M', localtime())
                 self.run_on(time)
             elif self.args[0] == 'off':
+                self.__switch_latest()
                 time = self.args[1] if len(self.args) >= 2 else strftime('%H:%M', localtime())
                 self.run_off(time)
             elif self.args[0] == 'push':
+                self.__switch_latest()
                 self.run_push()
             elif self.args[0] == 'switch':
                 self.run_switch()
             elif self.args[0] == 'merge':
+                self.__switch_latest()
                 self.run_merge()
             elif self.args[0] == 'comment':
+                self.__switch_latest()
                 self.run_comment()
             elif self.args[0] == 'drop':
+                self.__switch_latest()
                 self.run_drop()
             else:
                 raise QError('Invalid argument.')
