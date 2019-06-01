@@ -46,7 +46,6 @@ class CommandWork(AutoLoadCommand):
                 time = self.args[1] if len(self.args) >= 2 else strftime('%H:%M', localtime())
                 self.run_off(time)
             elif self.args[0] == 'push':
-                self.__switch_latest()
                 self.run_push()
             elif self.args[0] == 'switch':
                 self.run_switch()

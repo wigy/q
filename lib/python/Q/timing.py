@@ -200,6 +200,9 @@ class TimingMixin:
         """
         Get the full list of timing records.
         """
+        ticket = self.cmd.ticket
+        if ticket.code:
+            ticket.save()
         ret = []
         for p in QSettings.visit_all():
             QSettings.load(p)
@@ -207,6 +210,8 @@ class TimingMixin:
             ret += TimingMixin.log
         QSettings.visit_done()
         ret.sort(key = lambda w: w.start)
+        if ticket.code:
+            self.cmd.load(ticket.code)
         return ret
 
     def timing_get_the_latest(self):

@@ -75,6 +75,8 @@ class CommandReview(AutoGoCommand):
         # TODO: Delete review files.
 
     def run_make(self):
+        if self.ticket['Status'] == 'Started':
+            self.ticket.set_status('Working')
         self.readyness_check()
         from ..q import Q
         if not self.ticket['Review ID'] is None:
