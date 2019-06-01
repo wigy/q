@@ -10,6 +10,8 @@ import shutil
 
 from .file import QFile
 
+# Temporary store for setting paths.
+settings_stack = []
 
 class QSettings:
     """
@@ -80,6 +82,8 @@ class QSettings:
     IDE = 'code'
     # Command to verify syntax for the source code.
     LINT = None
+    # Colon separated path list of other projects belonging to this work timing group.
+    LINKED_PROJECTS = None
     # Name of the branch we hang around, when there is no ticket selected.
     LOBBY_BRANCH = 'master'
     # If set, do not do any network queries.
@@ -188,3 +192,18 @@ class QSettings:
         if parts[0]=='/' or parts[0]=='':
             return None
         return QSettings.find(parts[0])
+
+    @classmethod
+    def push(cls):
+        """
+        Save the current project path to the stack.
+        """
+        settings_stack.append(cls.dict()['APPDIR'] + '.q')
+
+    @classmethod
+    def pop(cls):
+        """
+        Restore the project settings from the topmost path in the stack.
+        """
+        path = settings_stack.pop()
+        QSettings.load(path)

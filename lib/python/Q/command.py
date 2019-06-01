@@ -178,6 +178,7 @@ class Command:
         from commands.go import CommandGo
         from commands.help import CommandHelp
         from commands.last import CommandLast
+        from commands.link import CommandLink
         from commands.ls import CommandLs
         from commands.my import CommandMy
         from commands.offline import CommandOffline
@@ -197,7 +198,7 @@ class Command:
         for name in ['Destroy', 'Help', 'Ls', 'Show', 'Start', 'Go', 'My', 'Diff', 'Commit', 'Settings', 'Publish',
                      'Update', 'Edit', 'Backport', 'Done', 'Build', 'Review', 'Release', 'Create', 'Reopen',
                      'Cancel', 'Test', 'Find', 'Base', 'Open', 'Url', 'Last', 'Offline',
-                     'Epic', 'Work']:
+                     'Epic', 'Work', 'Link']:
             ret[name.lower()] = eval("Command" + name)
 
         return ret
