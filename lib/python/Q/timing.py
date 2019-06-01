@@ -192,8 +192,14 @@ class TimingMixin:
         """
         Get the full list of timing records.
         """
-        self.timing_load()
-        return TimingMixin.log
+        ret = []
+        for p in QSettings.visit_all():
+            QSettings.load(p)
+            self.timing_load()
+            ret += TimingMixin.log
+        QSettings.visit_done()
+        ret.sort(key = lambda w: w.start)
+        return ret
 
     def timing_get_the_latest(self):
         """

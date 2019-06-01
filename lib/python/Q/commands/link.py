@@ -24,10 +24,11 @@ class CommandLink(Command):
                 for path in QSettings.LINKED_PROJECTS.split(':'):
                     self.wr('  ' + path)
         else:
-            this_path=QSettings.dict()['APPDIR']
+            # TODO: Could link all currently linked projects to the target as well.
+            this_path=QSettings.__dict__['APPDIR']
             QSettings.push()
             QSettings.load(self.args[0] + '.q')
-            other_path=QSettings.dict()['APPDIR']
+            other_path=QSettings.__dict__['APPDIR']
             if QSettings.LINKED_PROJECTS is None:
                 QSettings.LINKED_PROJECTS=this_path
             else:

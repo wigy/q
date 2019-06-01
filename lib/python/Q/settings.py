@@ -198,7 +198,7 @@ class QSettings:
         """
         Save the current project path to the stack.
         """
-        settings_stack.append(cls.dict()['APPDIR'] + '.q')
+        settings_stack.append(cls.__dict__['APPDIR'] + '.q')
 
     @classmethod
     def pop(cls):
@@ -207,3 +207,22 @@ class QSettings:
         """
         path = settings_stack.pop()
         QSettings.load(path)
+
+    @classmethod
+    def visit_all(cls):
+        """
+        Start visiting all projects and generate list of all projects.
+        """
+        linked = QSettings.__dict__['LINKED_PROJECTS']
+        ret = [QSettings.__dict__['APPDIR'] + '.q']
+        if linked is not None:
+            ret += [p + '.q' for p in linked.split(':')]
+        cls.push()
+        return ret
+
+    @classmethod
+    def visit_done(cls):
+        """
+        Restore all settings after visit is done.
+        """
+        cls.pop()
