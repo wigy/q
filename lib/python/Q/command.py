@@ -141,9 +141,12 @@ class Command:
         Call Q and reload the ticket.
         """
         from .q import Q
-        self.ticket.save()
+        code = self.ticket.code
+        if code:
+            self.ticket.save()
         Q(*args)
-        self.load(self.ticket.code)
+        if code:
+            self.load(code)
 
     @staticmethod
     def find(cmd):
