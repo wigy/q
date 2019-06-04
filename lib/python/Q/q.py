@@ -42,18 +42,15 @@ class Q:
     TIME = YELLOW
     DATE = CYAN
 
+    # What channel was the last print aiming.
     prev_channel = None
-    settings_loaded = False
+    # All loaded projects, the default is the first.
+    projects = []
 
     def __init__(self, *argv):
         """
         Parse and run.
         """
-        if not Q.settings_loaded:
-            Q.settings_loaded = True
-            path = QSettings.find()
-            if path:
-                QSettings.load(path)
         self.parse(*argv)
 
     @staticmethod
@@ -76,17 +73,22 @@ class Q:
         Set up the project and then parse and run commands.
         """
         try:
-            if QSettings.APP:
-                # TODO: This gives confusing error once .q is created but not edited. Change this logic.
-                self.project = QProject.create(QSettings)
+            if len(argv) > 0 and argv[0] in ['help', 'settings']:
+                Q.projects.append(QProject(QSettings()))
             else:
-                if len(argv) > 0 and argv[0] in ['help', 'settings']:
-                    self.project = QProject()
-                else:
-                    if QSettings.APPSETTINGS:
-                        raise QError("Project name is not defined. Please define " + Q.VAR + "APP" + Q.ERROR + " in " + Q.FILE + QSettings.APPSETTINGS + Q.ERROR + ".")
+                path = QSettings.find(os.getcwd())
+                if not path:
                     raise QError("Project is not defined. Do you have settings file '.q' created?\nUse " + Q.COMMAND + "q settings save" + Q.ERROR + " to create new settings file template.")
-            self.project.parse(*argv)
+                settings = QSettings.load(path)
+                project = QProject.create(settings)
+                Q.projects.append(project)
+                if settings.LINKED_PROJECTS:
+                    for path in settings.LINKED_PROJECTS.split(':'):
+                        path = re.sub('\/$', '', path)
+                        settings = QSettings.load(QSettings.find(path))
+                        project = QProject.create(settings)
+                        Q.projects.append(project)
+            Q.projects[0].parse(*argv)
         except QError as e:
             Q.wr('Fail', Q.ERROR + "ERROR: " + str(e) + Q.END)
             sys.exit(1)

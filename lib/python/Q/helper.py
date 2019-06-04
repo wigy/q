@@ -11,24 +11,18 @@ import tempfile
 import requests
 
 from .error import QError
-from .settings import QSettings
 from .file import QFile
 from .ticket import Ticket
 
 
 class QHelper(object):
     """
-    A helper class to collect and provide tools that needs only one instance.
+    A helper base class.
     """
     toolkit = {}
 
-    def __new__(cls, *args, **kwargs):
-        if cls.__name__ in QHelper.toolkit:
-            return QHelper.toolkit[cls.__name__]
-        ret = object.__new__(cls)
-        QHelper.toolkit[cls.__name__] = ret
-
-        return ret
+    def __init__(self, settings = None):
+        self.settings = settings
 
     def __call__(self, *args, **kwargs):
         """
@@ -80,7 +74,7 @@ class Curl(QHelper):
         Make a HTTP-request and return the results.
         """
         from q import Q
-        if QSettings.OFFLINE_MODE == 'yes':
+        if self.settings.OFFLINE_MODE == 'yes':
             self.wr("Skipping in offline-mode: "+Q.URL + url + Q.END)
             return ''
         import pycurl
@@ -135,7 +129,7 @@ class Requests(QHelper):
     """
     def run(self, url, post=None, put=None, delete=None, patch=None, upload=None, quiet=False, user=None, password=None, auth=None):
         from q import Q
-        if QSettings.OFFLINE_MODE == 'yes':
+        if self.settings.OFFLINE_MODE == 'yes':
             self.wr("Skipping in offline-mode: "+Q.URL + url + Q.END)
             return None
         if user:
@@ -292,21 +286,6 @@ class Git(SystemCall):
             return True
         return False
 
-    def current_branch_number(self, ignore_error=False):
-        """
-        Resolve the code of the current branch if any.
-        """
-        branch = self.current_branch_name(ignore_error=ignore_error)
-        if branch == QSettings.LOBBY_BRANCH:
-            return 0
-        num = None
-        if branch:
-            num = re.search(QSettings.TICKET_BRANCH_REGEX, branch)
-        if num:
-            code = num.group(1)
-            if Ticket(None).exists(code):
-                return code
-
     def latest_commit(self,branch=None):
         """
         Get the commit code of the latest commit of current or given branch.
@@ -323,7 +302,7 @@ class Git(SystemCall):
         """
         Find the commit code of the latest commit in develop branch.
         """
-        develop = self.latest_commit(QSettings.BASE_BRANCH)
+        develop = self.latest_commit(self.settings.BASE_BRANCH)
         this = self.latest_commit()
         commit = self.run('merge-base '+this+' '+develop, get_output=True)
         return commit.strip()
@@ -339,8 +318,8 @@ class Git(SystemCall):
             if hit:
                 Git.user = hit.group(1)
                 return self.user
-        if QSettings.GIT_USER:
-            return QSettings.GIT_USER
+        if self.settings.GIT_USER:
+            return self.settings.GIT_USER
         raise QError("Cannot find git user (are we on working directory?).")
 
     def has_changes(self):
@@ -359,19 +338,19 @@ class Git(SystemCall):
         Apply a patch from the diff file.
         """
         if reverse:
-            return self.run('-p1 -R  --no-backup-if-mismatch < '+diff,command='patch', chdir=QSettings.APPDIR)
+            return self.run('-p1 -R  --no-backup-if-mismatch < '+diff,command='patch', chdir=self.settings.APPDIR)
         else:
-            return self.run('-p1 --no-backup-if-mismatch < '+diff,command='patch', chdir=QSettings.APPDIR)
+            return self.run('-p1 --no-backup-if-mismatch < '+diff,command='patch', chdir=self.settings.APPDIR)
 
     def missing_files(self):
         """
         Find the files not in git.
         """
-        ret = self.run('ls-files -o --exclude-standard', get_output=True, chdir=QSettings.APPDIR).strip().split("\n")
+        ret = self.run('ls-files -o --exclude-standard', get_output=True, chdir=self.settings.APPDIR).strip().split("\n")
         if len(ret) == 1 and ret[0] == "":
             return []
         for i in range(len(ret)):
-            ret[i] = QSettings.APPDIR + ret[i]
+            ret[i] = self.settings.APPDIR + ret[i]
         return ret
 
 
@@ -381,9 +360,9 @@ class Edit(SystemCall):
     """
     def run(self, *files, **kwargs):
         if kwargs.get('light'):
-            editor=QSettings.EDITOR
+            editor=self.settings.EDITOR
         else:
-            editor=QSettings.IDE
+            editor=self.settings.IDE
         return super(Edit,self).run(*files, command=editor)
 
     def temp(self):
@@ -446,6 +425,6 @@ class Grunt(SystemCall):
     command = 'grunt'
 
     def run(self, *args, **kwargs):
-        if QSettings.GRUNT_DIR is None:
+        if self.settings.GRUNT_DIR is None:
             raise QError("Cannot us Grunt unless GRUNT_DIR has been specified.")
-        return super(Grunt,self).run(*args, chdir=os.path.join(QSettings.APPDIR, QSettings.GRUNT_DIR))
+        return super(Grunt,self).run(*args, chdir=os.path.join(self.settings.APPDIR, self.settings.GRUNT_DIR))

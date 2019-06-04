@@ -20,10 +20,10 @@ class CommandSettings(Command):
         """
         from ..q import Q
         if not self.args:
-            path = QSettings.find()
+            path = QSettings.find(os.getcwd())
             if path:
-                self.wr("Settings used from "+Q.COMMAND+"%s"+Q.END+".", path)
-            settings = QSettings.dict()
+                self.wr("Settings loaded from "+Q.COMMAND+"%s"+Q.END+".", path)
+            settings = QSettings().dict()
             names = settings.keys()
             names.sort()
             for k in names:
@@ -31,7 +31,7 @@ class CommandSettings(Command):
                 self.wr(str(settings[k]))
         elif self.args[0]=='save':
             path = os.getcwd()+'/.q'
-            QSettings.save(path)
+            QSettings().save(path)
             self.wr("Settings saved to '%s'.", path)
         else:
             raise QError("Invalid arguments '%s'.", self.args[0])

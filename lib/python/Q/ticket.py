@@ -67,6 +67,41 @@ class Ticket:
                   'Canceled': ['Working'],
                   }
 
+    def __init__(self, app, code=None):
+        self.app = app
+        self.settings = app.settings
+        self.root_path = self.settings.WORKDIR
+        self.code = code
+        self.data = {}
+
+    def __setitem__(self, k, v):
+        if type(v)==list:
+            label = "Set '%s'=" % k
+            for i in v:
+                self.wr(label+i)
+                label = " " * (7 + len(k))
+            self.data[k] = "\n".join(v)
+        else:
+            self.wr("Set '%s'='%s'", k, v)
+            self.data[k] = v
+
+    def __getitem__(self, k):
+        if k in self.data:
+            return self.data[k]
+        return None
+
+    def __repr__(self):
+        ret = {}
+        for k in self.all_keys():
+            v = self[k]
+            if not v is None:
+                ret[k] = v
+        if self.code:
+            code = '#' + self.code + ' '
+        else:
+            code = '#NoCode '
+        return '<Q.Ticket ' + code + repr(ret) + '>'
+
     def set_status(self, new):
         """
         Verify and set new status. Special status 'End X' is used to remove partial status of double status.
@@ -100,40 +135,6 @@ class Ticket:
         else:
             raise QError("Cannot switch from status %r to %r.", old, new)
 
-    def __init__(self, cmd, code=None):
-        self.cmd = cmd
-        self.root_path = QSettings.WORKDIR
-        self.code = code
-        self.data = {}
-
-    def __setitem__(self, k, v):
-        if type(v)==list:
-            label = "Set '%s'=" % k
-            for i in v:
-                self.wr(label+i)
-                label = " " * (7 + len(k))
-            self.data[k] = "\n".join(v)
-        else:
-            self.wr("Set '%s'='%s'", k, v)
-            self.data[k] = v
-
-    def __getitem__(self, k):
-        if k in self.data:
-            return self.data[k]
-        return None
-
-    def __repr__(self):
-        ret = {}
-        for k in self.all_keys():
-            v = self[k]
-            if not v is None:
-                ret[k] = v
-        if self.code:
-            code = '#' + self.code + ' '
-        else:
-            code = '#NoCode '
-        return '<Q.Ticket ' + code + repr(ret) + '>'
-
     def list(self, k):
         """
         Get the ticket data in list format splitted from newlines.
@@ -158,14 +159,14 @@ class Ticket:
         """
         Print out run time message.
         """
+        from q import Q
         channel=kwargs.get('channel')
         if not channel:
             if self.code:
                 channel = "#"+self.code
             else:
                 channel = "#NoTicket"
-
-        self.cmd.wr(*msg, channel=channel)
+        Q.wr(channel, *msg, **kwargs)
 
     def path(self, subdir=None):
         """
@@ -173,7 +174,7 @@ class Ticket:
         """
         if not self.code:
             return None
-        if not QSettings.WORKDIR:
+        if not self.settings.WORKDIR:
             raise QError("Ticket storage directory WORKDIR is not set.")
         ret = self.root_path + "/" + self.code
         if subdir:
@@ -184,13 +185,13 @@ class Ticket:
         """
         Get the URL of the ticket in the ticketing system.
         """
-        return self.cmd.app.ticket_url(self)
+        return self.app.ticket_url(self)
 
     def exists(self, code):
         """
         Check if this ticket path exists.
         """
-        if not QSettings.WORKDIR:
+        if not self.settings.WORKDIR:
             raise QError("Ticket storage directory WORKDIR is not set.")
         if os.path.isdir(self.root_path + "/" + code):
             return True
@@ -265,7 +266,7 @@ class Ticket:
         from helper import Git
         if self['Branch']:
             return self['Branch']
-        ret = QSettings.BRANCH_NAMING
+        ret = self.settings.BRANCH_NAMING
         ret = ret.replace('%c', self.code)
         ret = ret.replace('%u', Git().username())
         if self.is_epic():
@@ -290,7 +291,7 @@ class Ticket:
         """
         Get the branch name this ticket is originating from.
         """
-        base = QSettings.BASE_BRANCH
+        base = self.settings.BASE_BRANCH
         if self['Base']:
             base = self['Base']
         return base
@@ -393,24 +394,23 @@ class Ticket:
         """
         Get the ticket number from branch name.
         """
-        g = re.match(QSettings.TICKET_BRANCH_REGEX, name)
+        g = re.match(self.settings.TICKET_BRANCH_REGEX, name)
         if g:
             return g.group(1)
 
-    @classmethod
-    def all_codes(cls):
+    def all_codes(self):
         """
         Get the list of all codes for tickets found.
         """
         from q import Q
-        if not QSettings.WORKDIR:
+        if not self.settings.WORKDIR:
             raise QError("Ticket storage directory WORKDIR is not set.")
         ret = []
-        if not os.path.isdir(QSettings.WORKDIR):
-            Q.wr("Initialize", "Creating ticket directory '%s'.", QSettings.WORKDIR)
-            mkpath(QSettings.WORKDIR)
-        for p in os.listdir(QSettings.WORKDIR):
-            if os.path.isfile(QSettings.WORKDIR+"/"+p+"/README"):
+        if not os.path.isdir(self.settings.WORKDIR):
+            Q.wr("Initialize", "Creating ticket directory '%s'.", self.settings.WORKDIR)
+            mkpath(self.settings.WORKDIR)
+        for p in os.listdir(self.settings.WORKDIR):
+            if os.path.isfile(self.settings.WORKDIR+"/"+p+"/README"):
                 ret.append(p)
         return ret
 
@@ -463,16 +463,16 @@ class Ticket:
         from q import Q
         from helper import Git
         db = self['DB']
-        if db and db != self.cmd.app.db_info()['db']:
+        if db and db != self.app.db_info()['db']:
             self.wr("Switching to DB '%s'." % db)
-            self.cmd.app.change_db(db)
+            self.app.change_db(db)
             # TODO: Restart servers
         Git()('checkout '+self.branch_name())
         stash = self.has_stash()
         if stash:
             Git()('stash pop '+stash)
-        if QSettings.USE_SUBMODULES:
-            Git()('submodule update', chdir=QSettings.APPDIR)
+        if self.settings.USE_SUBMODULES:
+            Git()('submodule update', chdir=self.settings.APPDIR)
         Q('my','apply')
 
     def changed_files(self):
@@ -508,14 +508,14 @@ class Ticket:
         save = False
 
         if self['Build ID'] and self['Build Result'] not in ['Success', 'Fail']:
-            check = lambda : self.cmd.app.build_status(self)
+            check = lambda : self.app.build_status(self)
             state = QCache.get('Build ' + str(self['Build ID']), check)
             if state and self['Build Result'] != state:
                 self['Build Result'] = state
                 save = True
 
         if self['Review ID'] and self['Review Result'] not in ['Success', 'Fail']:
-            check = lambda : self.cmd.app.review_status(self['Review ID'])
+            check = lambda : self.app.review_status(self['Review ID'])
             state = QCache.get('Review ' + str(self['Review ID']), check)
             if state and self['Review Result'] != state:
                 self['Review Result'] = state
@@ -542,7 +542,7 @@ class Ticket:
                 save = True
 
         if self['Status'] == 'Ready':
-            if self.cmd.app.release_can_be_skipped(self):
+            if self.app.release_can_be_skipped(self):
                 self.set_status('Done')
                 save = True
 
@@ -575,5 +575,5 @@ class Ticket:
         return ret
 
     def save_settings(self):
-        settings = open(QSettings.find(), 'r').read()
+        settings = open(self.settings.find(), 'r').read()
         open(self.path() + '/.q', 'w').write(settings)

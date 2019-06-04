@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
+import re
 from ..error import QError
-from ..settings import QSettings
 from ..command import Command
 from ..helper import Git
 from ..ticket import Ticket
@@ -17,7 +17,7 @@ class CommandLs(Command):
         from ..q import Q
         spaces = tabs * ' '
         color = Q.USER
-        if ticket['Owner'] == QSettings.GIT_USER:
+        if ticket['Owner'] == self.settings.GIT_USER:
             color = Q.USER_ME
         branch_color = Q.BRANCH
         if ticket.is_epic():
@@ -75,11 +75,11 @@ class CommandLs(Command):
         usage: q [ls] [--all]
         """
         from ..q import Q
-        current = Git().current_branch_number(ignore_error=True)
+        current = self.current_branch_number()
         if current:
             Q('my','revert')
         modified = {}
-        if current and Git().has_changes():
+        if current and Git(self.settings).has_changes():
             modified[current]=True
         for code in Ticket.stash_names():
             modified[code]=True
@@ -87,7 +87,7 @@ class CommandLs(Command):
         working = []
         done_but_current = []
         show_all = self.opts.get('all')
-        codes = Ticket.all_codes()
+        codes = self.ticket.all_codes()
         codes.sort(reverse = True)
         # Run separate refresh round to get prints out of the listing.
         for code in codes:

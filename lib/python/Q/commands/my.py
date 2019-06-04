@@ -25,7 +25,7 @@ class CommandMy(Command):
         """
         from ..q import Q
         # This command should work quietly even when no ticket.
-        current = Git().current_branch_number(ignore_error=True)
+        current = self.current_branch_number(ignore_error=True)
         if not current:
             return
         self.load(current)

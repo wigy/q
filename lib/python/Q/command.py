@@ -2,7 +2,6 @@
 
 import os
 from .error import QError
-from .settings import QSettings
 from .ticket import Ticket
 from .helper import *
 
@@ -34,6 +33,7 @@ class Command:
 
     def __init__(self, app):
         self.app = app
+        self.settings = app.settings
         self.ticket = Ticket(self)
 
     def readyness_check(self):
@@ -41,10 +41,10 @@ class Command:
         Check configured verifications before launching build or review.
         """
         from .q import Q
-        if QSettings.LINT:
+        if self.settings.LINT:
             self.wr('Performing readyness checks...')
-            self.wr(Q.COMMAND + QSettings.LINT + Q.END)
-            if os.system(QSettings.LINT):
+            self.wr(Q.COMMAND + self.settings.LINT + Q.END)
+            if os.system(self.settings.LINT):
                 raise QError("Readyness check failed.")
 
     def _check_for_ticket(self, str):
@@ -53,14 +53,14 @@ class Command:
         """
         if str == '0':
             return str
-        if re.match(QSettings.TICKET_NUMBER_REGEX, str):
+        if re.match(self.settings.TICKET_NUMBER_REGEX, str):
             return str
-        if QSettings.WORKDIR is None:
+        if self.settings.WORKDIR is None:
             return None
-        for code in Ticket.all_codes():
+        for code in self.ticket.all_codes():
             if str == code:
                 return code
-            match = re.match(QSettings.TICKET_NUMBER_REGEX, code)
+            match = re.match(self.settings.TICKET_NUMBER_REGEX, code)
             if match:
                 matches = match.groups()
                 # If there are more than one parenthesis, use the last one.
@@ -135,6 +135,21 @@ class Command:
         ret = self.ticket
         self.ticket = old
         return ret
+
+    def current_branch_number(self, ignore_error=False):
+        """
+        Resolve the code of the current branch if any.
+        """
+        branch = Git().current_branch_name(ignore_error=ignore_error)
+        if branch == self.settings.LOBBY_BRANCH:
+            return 0
+        num = None
+        if branch:
+            num = re.search(self.settings.TICKET_BRANCH_REGEX, branch)
+        if num:
+            code = num.group(1)
+            if Ticket(self.app).exists(code):
+                return code
 
     def Q(self, *args):
         """
@@ -216,7 +231,7 @@ class AutoLoadCommand(Command):
             if not self.ticket.exists(code):
                 raise QError("No such ticket as #%s." % code)
         else:
-            code = Git().current_branch_number()
+            code = self.current_branch_number()
         if code is None:
             raise QError("Cannot find the current ticket number from git branch.")
         if code:
@@ -233,7 +248,7 @@ class AutoGoCommand(AutoLoadCommand):
             return
         if code != '0' and not self.ticket.exists(code):
             raise QError("No such ticket as #%s." % code)
-        old = Git().current_branch_number(ignore_error=True)
+        old = self.current_branch_number(ignore_error=True)
         if old:
             self.load(old)
         if code == old:
@@ -241,7 +256,7 @@ class AutoGoCommand(AutoLoadCommand):
         if old:
             self.ticket.leave()
         if code == '0':
-            Git()('checkout ' + QSettings.LOBBY_BRANCH)
+            Git()('checkout ' + self.settings.LOBBY_BRANCH)
             return
         self.load(code)
         self.ticket.enter()
@@ -344,7 +359,7 @@ class CommandDb(AutoLoadCommand):
             else:
                 info['db'] = self.args[1]
                 Mysql().save(info, init_path)
-            info['db'] = QSettings.DB_NAME % self.ticket.code
+            info['db'] = self.settings.DB_NAME % self.ticket.code
             Mysql().create(info)
             if init_path:
                  Mysql().load(info, init_path)
@@ -355,7 +370,7 @@ class CommandDb(AutoLoadCommand):
 
         elif self.args[0] == 'reset':
 
-            db_name = QSettings.DB_NAME % self.ticket.code
+            db_name = self.settings.DB_NAME % self.ticket.code
             self.app.db_reset()
             save_path = self.ticket.path("empty.sql")
             self.ticket['Dump']=save_path

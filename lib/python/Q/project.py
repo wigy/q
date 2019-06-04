@@ -3,7 +3,6 @@ import os
 import re
 
 from .error import QError
-from .settings import QSettings
 from .building import NoBuild, BuildByBamboo
 from .reviewing import ReviewByReviewBoard, ReviewByGerrit, ReviewByVSTS, ReviewByBitbucket, NoReview, ReviewByLocalDiff
 from .testing import TestingByNose, TestingByShellCommands
@@ -19,13 +18,20 @@ class QProject:
     """
     Base functionality for querying and executing tasks for the application project.
     """
+    def __init__(self, settings):
+        self.settings = settings
+
+    def __repr__(self):
+        if self.settings.APPSETTINGS:
+            return '<Q.Project ' + self.settings.APPSETTINGS + '.project.py>'
+        return '<Q.Project>'
 
     def parse(self, *_argv):
         argv = list(_argv)
         # Handle short-cuts for no arguments and single ticket number argument.
         if len(argv)==0:
             argv = ['ls', '--short']
-        elif len(argv)==1 and (re.match('^[0-9]+$', argv[0]) or re.match(QSettings.TICKET_NUMBER_REGEX, argv[0])):
+        elif len(argv)==1 and (re.match('^[0-9]+$', argv[0]) or re.match(self.settings.TICKET_NUMBER_REGEX, argv[0])):
             argv = ['go', argv[0]]
         # Find the command and execute it.
         constructor = Command.find(argv[0])
@@ -79,4 +85,4 @@ class Project(QProject, APP_TICKETING, APP_RELEASING, APP_REVIEWING, APP_BUILDIN
         except NameError as err:
             raise QError("Invalid configuration: %r.", err)
 
-        return Project()
+        return Project(settings)

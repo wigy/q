@@ -28,7 +28,7 @@ class CommandStart(Command):
             raise QError("No code given for the ticket.")
 
         # Leave current ticket.
-        current = Git().current_branch_number(ignore_error=True)
+        current = self.current_branch_number(ignore_error=True)
         if(current):
             self.load(current)
             self.ticket.leave()
