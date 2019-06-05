@@ -34,7 +34,7 @@ class Command:
     def __init__(self, app):
         self.app = app
         self.settings = app.settings
-        self.ticket = Ticket(self)
+        self.ticket = Ticket(app)
 
     def readyness_check(self):
         """
@@ -57,7 +57,7 @@ class Command:
             return str
         if self.settings.WORKDIR is None:
             return None
-        for code in self.ticket.all_codes():
+        for code in self.app.all_codes():
             if str == code:
                 return code
             match = re.match(self.settings.TICKET_NUMBER_REGEX, code)
@@ -123,18 +123,8 @@ class Command:
         """
         Load the ticket with the given code.
         """
-        self.ticket = Ticket(self, code)
+        self.ticket = Ticket(self.app, code)
         self.ticket.load()
-
-    def get_ticket(self, code):
-        """
-        Get the ticket without changing current ticket.
-        """
-        old = self.ticket
-        self.load(code)
-        ret = self.ticket
-        self.ticket = old
-        return ret
 
     def current_branch_number(self, ignore_error=False):
         """
@@ -153,15 +143,11 @@ class Command:
 
     def Q(self, *args):
         """
-        Call Q and reload the ticket.
+        Call Q again.
         """
-        from .q import Q
-        code = self.ticket.code
-        if code:
-            self.ticket.save()
-        Q(*args)
-        if code:
-            self.load(code)
+        old_cmd=self.app.cmd
+        self.app.q.parse(*args)
+        self.app.cmd=old_cmd
 
     @staticmethod
     def find(cmd):

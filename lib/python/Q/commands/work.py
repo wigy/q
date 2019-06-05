@@ -18,14 +18,6 @@ class CommandWork(AutoLoadCommand):
                      'p' : 'push'
                     }
 
-    def __switch_latest(self):
-        """
-        Helper to fetch the latest project and ticket by time log.
-        """
-        work = self.app.timing_get_the_latest()
-        if QSettings.find_by_code(work.code):
-            self.load(work.code)
-
     def run(self):
         """
         usage: q work [--today|on [<time>]|off [<time>]|push|switch|merge|comment|drop]
@@ -42,7 +34,6 @@ class CommandWork(AutoLoadCommand):
                 time = self.args[1] if len(self.args) >= 2 else strftime('%H:%M', localtime())
                 self.run_on(time)
             elif self.args[0] == 'off':
-                self.__switch_latest()
                 time = self.args[1] if len(self.args) >= 2 else strftime('%H:%M', localtime())
                 self.run_off(time)
             elif self.args[0] == 'push':
@@ -50,13 +41,10 @@ class CommandWork(AutoLoadCommand):
             elif self.args[0] == 'switch':
                 self.run_switch()
             elif self.args[0] == 'merge':
-                self.__switch_latest()
                 self.run_merge()
             elif self.args[0] == 'comment':
-                self.__switch_latest()
                 self.run_comment()
             elif self.args[0] == 'drop':
-                self.__switch_latest()
                 self.run_drop()
             else:
                 raise QError('Invalid argument.')
@@ -73,7 +61,7 @@ class CommandWork(AutoLoadCommand):
         left = 0
         def show_sum():
             self.wr(Q.GREEN + "              Total: %.2fh" % sum + Q.END)
-            left = float(QSettings.WORK_HOURS) - sum
+            left = float(self.settings.WORK_HOURS) - sum
             if left:
                 self.wr(Q.GREEN + "              Left: %.2fh (%d min)" % (left, left * 60) + Q.END)
         for e in log:
@@ -94,7 +82,7 @@ class CommandWork(AutoLoadCommand):
             self.wr(Q.TIME + time[0:5] + ' - ' + time2[0:5] + ' ' +  Q.END + e.code + '\t' + e.human() + '  ' + text)
             sum += e.minutes() / 60
         show_sum()
-        left = float(QSettings.WORK_HOURS) - sum
+        left = float(self.settings.WORK_HOURS) - sum
         if left:
             self.wr(Q.GREEN + "              Done: %s" % str(datetime.now() + timedelta(hours=left))[11:11 + 5] + Q.END)
 
@@ -125,7 +113,6 @@ class CommandWork(AutoLoadCommand):
             raise QError('Cannot merge latest two work entries.')
         self.ticket.work_timing_merge()
         self.ticket.save()
-        self.app.timing_rebuild_cache()
 
     def run_drop(self):
         """
@@ -137,13 +124,19 @@ class CommandWork(AutoLoadCommand):
         self.load(log[-1].code)
         self.ticket.work_timing_drop()
         self.ticket.save()
-        self.app.timing_rebuild_cache()
 
     def run_push(self):
         """
         Push work logs.
         """
-        self.app.timing_push_ticket(self.ticket)
+        date = strftime('%Y-%m-%d', localtime())
+        log = self.app.timing_get_full_list(date = date)
+        codes = set()
+        for w in log:
+            codes.add(w.code)
+        for code in codes:
+            ticket=self.app.load_ticket(code)
+            self.app.timing_push_ticket(ticket)
 
     def run_switch(self):
         """
@@ -165,7 +158,7 @@ class CommandWork(AutoLoadCommand):
                     self.load(code)
                     self.app.timing_on_for_ticket(self.ticket, time)
             else:
-                time = work.start[0:10] + ' ' + QSettings.WORK_END
+                time = work.start[0:10] + ' ' + self.settings.WORK_END
                 self.app.timing_off_for_ticket(self.ticket, time)
         else:
             if work.is_today():
@@ -174,7 +167,7 @@ class CommandWork(AutoLoadCommand):
                 self.app.timing_on_for_ticket(self.ticket, time)
             else:
                 # Assume morning and start fresh new day.
-                self.app.timing_on_for_ticket(self.ticket, QSettings.WORK_START)
+                self.app.timing_on_for_ticket(self.ticket, self.settings.WORK_START)
 
     def run_comment(self):
         """

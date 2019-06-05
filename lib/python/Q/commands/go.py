@@ -10,6 +10,5 @@ class CommandGo(AutoGoCommand):
         """
         usage: q [go] <code>|0
         """
-        from ..q import Q
         # Nothing to do, switching is done automatically.
-        Q('ls', '--short')
+        self.Q('ls', '--short')

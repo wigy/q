@@ -3,7 +3,6 @@ import re
 import json
 import simplejson
 
-from .settings import QSettings
 from .error import QError
 from .helper import Curl, Git, Edit, Requests
 
@@ -53,7 +52,7 @@ class ReviewMixin:
         """
         Calculate review title for a ticket.
         """
-        title = QSettings.REVIEW_TITLE
+        title = self.settings.REVIEW_TITLE
         title = title.replace('%c', str(ticket.code))
         title = title.replace('%t', ticket['Title'])
         return title
@@ -128,12 +127,12 @@ class ReviewByReviewBoard(ReviewMixin):
         Call the review board API and return JSON response.
         """
         from q import Q
-        base = QSettings.REVIEW_SERVER
+        base = self.settings.REVIEW_SERVER
         if base[-1] == '/':
             base = base[0:-1]
         if url == '' or url[0] != '/':
             url = '/' + url
-        content = Curl()(base +  "/api" + url, post=post, put=put, quiet=quiet, upload=upload, user=QSettings.REVIEW_USER, password=QSettings.REVIEW_PASS)
+        content = Curl()(base +  "/api" + url, post=post, put=put, quiet=quiet, upload=upload, user=self.settings.REVIEW_USER, password=self.settings.REVIEW_PASS)
         try:
             ret = json.loads(content)
         except ValueError, e:
@@ -176,7 +175,7 @@ class ReviewByReviewBoard(ReviewMixin):
         """
         Generate review 'Testing Done' section.
         """
-        testing = QSettings.REVIEW_ADDITIONAL_DESCRIPTION
+        testing = self.settings.REVIEW_ADDITIONAL_DESCRIPTION
         build_url = ''
         if ticket['Build ID']:
             build_url = self.build_url(ticket)
@@ -187,17 +186,17 @@ class ReviewByReviewBoard(ReviewMixin):
         """
         Create new review draft.
         """
-        if not QSettings.REVIEW_GROUPS:
+        if not self.settings.REVIEW_GROUPS:
             raise QError("No groups defined for reviewing. Please set REVIEW_GROUPS.")
 
-        repo_id = self._review_repository_id(QSettings.REVIEW_REPOSITORY);
+        repo_id = self._review_repository_id(self.settings.REVIEW_REPOSITORY);
 
         id = self._create_review_draft(repo_id)
 
         title = self.get_review_title(ticket)
-        description = QSettings.REVIEW_DESCRIPTION
+        description = self.settings.REVIEW_DESCRIPTION
         description = description.replace('%u', ticket.url())
-        testing = QSettings.REVIEW_ADDITIONAL_DESCRIPTION
+        testing = self.settings.REVIEW_ADDITIONAL_DESCRIPTION
         build_url = ''
         if ticket['Build ID']:
             build_url = self.build_url(ticket)
@@ -208,7 +207,7 @@ class ReviewByReviewBoard(ReviewMixin):
                                        'description': description,
                                        'text_type': 'plain',
                                        'testing_done' : testing,
-                                       'target_groups': QSettings.REVIEW_GROUPS})
+                                       'target_groups': self.settings.REVIEW_GROUPS})
 
         self._upload_initial_review_diff(id, file)
 
@@ -221,7 +220,7 @@ class ReviewByReviewBoard(ReviewMixin):
         Get the URL for the given review.
         """
         if review_id:
-            return (QSettings.REVIEW_SERVER +  "/r/%s/") % review_id
+            return (self.settings.REVIEW_SERVER +  "/r/%s/") % review_id
 
     def review_status(self, review_id):
         """
@@ -229,9 +228,9 @@ class ReviewByReviewBoard(ReviewMixin):
         """
         ret = self._review_api('/review-requests/' + str(review_id) +'/')
         ship_its = int(ret['review_request']['ship_it_count'])
-        if ship_its >= int(QSettings.REVIEW_SHIPITS):
+        if ship_its >= int(self.settings.REVIEW_SHIPITS):
             return 'Success'
-        return "%d%%" % (ship_its * 100 / int(QSettings.REVIEW_SHIPITS))
+        return "%d%%" % (ship_its * 100 / int(self.settings.REVIEW_SHIPITS))
 
     def review_update_build(self, ticket):
         """
@@ -249,7 +248,7 @@ class ReviewByGerrit(ReviewMixin):
     """
 
     def _make_squashed_commit(self, ticket):
-        base = QSettings.BASE_BRANCH
+        base = self.settings.BASE_BRANCH
         if ticket['Base']:
             sq = 'squash/' + ticket['Base']
             if Git().branch_exists(sq):
@@ -322,7 +321,7 @@ class ReviewByGerrit(ReviewMixin):
         Get the URL for the given review.
         """
         if review_id:
-            return (QSettings.REVIEW_SERVER +  "/#/c/%s/") % str(review_id)
+            return (self.settings.REVIEW_SERVER +  "/#/c/%s/") % str(review_id)
 
 class ReviewByVSTS(ReviewMixin):
     """
@@ -380,7 +379,7 @@ class ReviewByVSTS(ReviewMixin):
 
     def review_url(self, review_id):
         if review_id:
-            return QSettings.REVIEW_URL.replace('%c', str(review_id))
+            return self.settings.REVIEW_URL.replace('%c', str(review_id))
 
     def review_update_build(self, ticket):
         # TODO: VSTS: Implement review_update_build().
@@ -401,9 +400,9 @@ class ReviewByBitbucket(ReviewMixin):
     def review_start(self, ticket, file):
         base = ticket['Base']
         if not base:
-            base = QSettings.BITBUCKET_PR_TARGET
+            base = self.settings.BITBUCKET_PR_TARGET
         self._review_check()
-        repo = "%s/%s" % (QSettings.BITBUCKET_PROJECT, QSettings.BITBUCKET_REPO)
+        repo = "%s/%s" % (self.settings.BITBUCKET_PROJECT, self.settings.BITBUCKET_REPO)
         url = 'https://bitbucket.org/api/2.0/repositories/%s/pullrequests/' % repo
         out = {
             "title": self.get_review_title(ticket),
@@ -433,29 +432,29 @@ class ReviewByBitbucket(ReviewMixin):
         return int(re.match('.*/pullrequests/(.*)/diff', diff).groups()[0])
 
     def _review_auth(self):
-        if not QSettings.BITBUCKET_USER:
+        if not self.settings.BITBUCKET_USER:
             raise QError("User for Bamboo BITBUCKET_USER is not set.")
-        if not QSettings.BITBUCKET_PASSWORD:
+        if not self.settings.BITBUCKET_PASSWORD:
             raise QError("Password for Bamboo BITBUCKET_PASSWORD is not set.")
-        return (QSettings.BITBUCKET_USER, QSettings.BITBUCKET_PASSWORD)
+        return (self.settings.BITBUCKET_USER, self.settings.BITBUCKET_PASSWORD)
 
     def _review_check(self):
         """
         Check that all necessary settings are set.
         """
-        if not QSettings.BITBUCKET_PROJECT:
+        if not self.settings.BITBUCKET_PROJECT:
             raise QError("Project name BITBUCKET_PROJECT is not set.")
-        if not QSettings.BITBUCKET_REPO:
+        if not self.settings.BITBUCKET_REPO:
             raise QError("Repository name BITBUCKET_REPO is not set.")
-        if not QSettings.BITBUCKET_PR_TARGET:
+        if not self.settings.BITBUCKET_PR_TARGET:
             raise QError("Bitbucket pull request target BITBUCKET_PR_TARGET is not set.")
 
     def review_url(self, review_id):
-        repo = "%s/%s" % (QSettings.BITBUCKET_PROJECT, QSettings.BITBUCKET_REPO)
+        repo = "%s/%s" % (self.settings.BITBUCKET_PROJECT, self.settings.BITBUCKET_REPO)
         return 'https://bitbucket.org/%s/pull-requests/%s' % (repo, review_id)
 
     def review_status(self, review_id):
-        repo = "%s/%s" % (QSettings.BITBUCKET_PROJECT, QSettings.BITBUCKET_REPO)
+        repo = "%s/%s" % (self.settings.BITBUCKET_PROJECT, self.settings.BITBUCKET_REPO)
         url = 'https://bitbucket.org/api/2.0/repositories/%s/pullrequests/%s' % (repo, review_id)
         resp = Requests()(url, auth=self._review_auth())
         if not resp:
@@ -475,7 +474,7 @@ class ReviewByBitbucket(ReviewMixin):
                 else:
                     raise QError('Unknown review role: %r.' % person['role'])
             if total:
-                if ok == total or (QSettings.REVIEW_SHIPITS and ok >= int(QSettings.REVIEW_SHIPITS)):
+                if ok == total or (self.settings.REVIEW_SHIPITS and ok >= int(self.settings.REVIEW_SHIPITS)):
                     return 'Success'
                 return str(ok) + '/' + str(total)
             return 'Pending'

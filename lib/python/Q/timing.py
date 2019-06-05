@@ -4,7 +4,6 @@ import pickle
 import datetime
 from time import localtime, strftime
 from .error import QError
-from .settings import QSettings
 from .ticket import Ticket
 from .helper import Curl, Requests
 
@@ -155,63 +154,33 @@ class TimingMixin:
     Base class for work log implementations.
     """
 
-    log = []
-
-    @classmethod
-    def path(cls):
-        """
-        Storage path for work log.
-        """
-        return os.path.join(QSettings.APPDIR, '.q.work.log')
-
-    def read_from_tickets(self):
-        """
-        Read work log data from tickets.
-        """
-        TimingMixin.log = []
-        for code in Ticket.all_codes():
-            self.cmd.load(code)
-            TimingMixin.log += self.cmd.ticket.work_timing()
-        TimingMixin.log.sort(key = lambda w: w.start)
-
-    def timing_load(self):
-        # TODO: Cache does not work correctly with multiple project yet.
-        self.read_from_tickets()
-        self.timing_save()
-        return
-        try:
-            with open(TimingMixin.path(), 'rb') as input:
-                TimingMixin.log = pickle.load(input)
-        except IOError, e:
-            self.read_from_tickets()
-            self.timing_save()
-
-    def timing_save(self):
-        with open(TimingMixin.path(), 'wb') as output:
-            pickle.dump(TimingMixin.log, output, pickle.HIGHEST_PROTOCOL)
-
     def timing_is_in_use(self):
         """
         Determine if we are using the timing system.
         """
         return True
 
-    def timing_get_full_list(self):
+    def timing_load(self, project, date=None):
+        """
+        Load all timing entries for the project.
+        """
+        ret = []
+        for ticket in project.all_tickets():
+            times = ticket.work_timing()
+            if date is not None:
+                times = filter(lambda x: x.start[0:10] == date, times)
+            ret += times
+        ret.sort(key = lambda w: w.start)
+        return ret
+
+    def timing_get_full_list(self, date=None):
         """
         Get the full list of timing records.
         """
-        ticket = self.cmd.ticket
-        if ticket.code:
-            ticket.save()
         ret = []
-        for p in QSettings.visit_all():
-            QSettings.load(p)
-            self.timing_load()
-            ret += TimingMixin.log
-        QSettings.visit_done()
+        for project in self.cmd.app.q.projects:
+            ret += self.timing_load(project, date)
         ret.sort(key = lambda w: w.start)
-        if ticket.code:
-            self.cmd.load(ticket.code)
         return ret
 
     def timing_get_the_latest(self):
@@ -245,9 +214,6 @@ class TimingMixin:
         date = self._parse_timing_date(time)
         ticket.work_timing_on(date)
         ticket.save()
-        self.timing_load()
-        TimingMixin.log.append(WorkEntry(code=ticket.code, start=date))
-        self.timing_save()
 
     def timing_off_for_ticket(self, ticket, time):
         """
@@ -256,9 +222,6 @@ class TimingMixin:
         date = self._parse_timing_date(time)
         ticket.work_timing_off(date)
         ticket.save()
-        self.timing_load()
-        TimingMixin.log[-1].stop = date
-        self.timing_save()
 
     def timing_comment_for_ticket(self, ticket, comment):
         """
@@ -269,15 +232,6 @@ class TimingMixin:
             raise QError('Cannot comment ticket ' + ticket.code + ' work log that is not the latest work ' + work.code + '.')
         ticket.work_timing_comment(comment)
         ticket.save()
-        work.add_comment(comment)
-        self.timing_save()
-
-    def timing_rebuild_cache(self):
-        """
-        Drop cache and rebuild from tickets.
-        """
-        self.read_from_tickets()
-        self.timing_save()
 
     def timing_push_ticket(self, ticket):
         """
@@ -297,9 +251,9 @@ class TimingByAtlassian(TimingMixin):
     """
 
     def __remove_atlassian_worklog(self, ticket):
-        resp = Requests()(QSettings.ATLASSIAN_URL + '/rest/api/3/issue/' + ticket.code + '/worklog', auth=self._ticketing_auth())
+        resp = Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/3/issue/' + ticket.code + '/worklog', auth=self._ticketing_auth())
         for work in resp.json()['worklogs']:
-            Requests()(QSettings.ATLASSIAN_URL + '/rest/api/3/issue/' + ticket.code + '/worklog/' + work['id'], delete=True, auth=self._ticketing_auth())
+            Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/3/issue/' + ticket.code + '/worklog/' + work['id'], delete=True, auth=self._ticketing_auth())
 
     def timing_push_ticket(self, ticket):
         self.__remove_atlassian_worklog(ticket)
@@ -321,4 +275,4 @@ class TimingByAtlassian(TimingMixin):
                     }]
                 }
 
-            resp = Requests()(QSettings.ATLASSIAN_URL + '/rest/api/3/issue/' + work.code + '/worklog', post=data, auth=self._ticketing_auth())
+            resp = Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/3/issue/' + work.code + '/worklog', post=data, auth=self._ticketing_auth())

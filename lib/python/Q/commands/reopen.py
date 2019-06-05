@@ -21,4 +21,4 @@ class CommandReopen(AutoLoadCommand):
         self.ticket.delete('Review ID')
         self.ticket.set_status("Working")
         self.ticket.save()
-        Q('go', self.ticket.code)
+        self.Q('go', self.ticket.code)

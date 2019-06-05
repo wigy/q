@@ -65,25 +65,25 @@ class CommandBuild(AutoGoCommand):
         from ..q import Q
         if not self.ticket['Build ID'] is None:
             raise QError("Ticket has already build %r. Use " + Q.COMMAND + "q build update" + Q.ERROR + " to rebuild.", self.ticket['Build ID'])
-        Q('my','revert')
+        self.Q('my','revert')
         self._do_build()
-        Q('my','apply')
+        self.Q('my','apply')
 
     def run_update(self):
         self.readyness_check()
         from ..q import Q
         if self.ticket['Build ID'] is None:
             raise QError("Cannot update without any earlier builds.")
-        Q('my','revert')
+        self.Q('my','revert')
         self._do_build()
         if not self.ticket['Review ID'] is None:
             self.app.review_update_build(self.ticket)
-        Q('my','apply')
+        self.Q('my','apply')
 
     def _do_build(self):
         from ..q import Q
         if self.app.build_needs_publish():
-            Q('publish')
+            self.Q('publish')
         cid = Git().latest_commit()
         bid = self.app.build_start(self.ticket, cid)
         if bid is None:

@@ -10,7 +10,6 @@ import shutil
 import requests
 import json
 
-from .settings import QSettings
 from .error import QError
 from .helper import Curl, Grunt
 
@@ -80,13 +79,13 @@ class NoBuild(BuildMixin):
 class BuildByBamboo(BuildMixin):
 
     def build_start(self, ticket, gitid):
-        if not QSettings.BAMBOO_URL:
+        if not self.settings.BAMBOO_URL:
             raise QError("Must define BAMBOO_URL to build.")
-        if not QSettings.BAMBOO_PLANS:
+        if not self.settings.BAMBOO_PLANS:
             raise QError("Must define BAMBOO_PLANS to build.")
         ret = {}
-        for plan in QSettings.BAMBOO_PLANS.split("\n"):
-            url = QSettings.BAMBOO_URL + "rest/api/latest/queue/%s.json?customRevision=%s" % (plan, gitid)
+        for plan in self.settings.BAMBOO_PLANS.split("\n"):
+            url = self.settings.BAMBOO_URL + "rest/api/latest/queue/%s.json?customRevision=%s" % (plan, gitid)
             resp = requests.post(url, auth=self._build_auth(), verify=False)
             data = resp.json()
             ret[data['planKey']] = data['buildNumber']
@@ -99,7 +98,7 @@ class BuildByBamboo(BuildMixin):
         total = 0
         for plan in builds.keys():
             total += 1
-            url = QSettings.BAMBOO_URL + "rest/api/latest/result/%s/%s.json" % (plan, builds[plan])
+            url = self.settings.BAMBOO_URL + "rest/api/latest/result/%s/%s.json" % (plan, builds[plan])
             try:
                 resp = requests.get(url, auth=self._build_auth(), verify=False)
                 data = resp.json()
@@ -127,15 +126,15 @@ class BuildByBamboo(BuildMixin):
             builds = json.loads(ticket['Build ID'])
             ret = []
             for plan in builds.keys():
-                ret.append(QSettings.BAMBOO_URL + 'browse/%s-%d' % (plan, builds[plan]))
+                ret.append(self.settings.BAMBOO_URL + 'browse/%s-%d' % (plan, builds[plan]))
             return "\n".join(ret)
 
     def _build_auth(self):
         """
         Authentication parameter.
         """
-        if not QSettings.BAMBOO_USER:
+        if not self.settings.BAMBOO_USER:
             raise QError("User for Bamboo BAMBOO_USER is not set.")
-        if not QSettings.BAMBOO_PASSWORD:
+        if not self.settings.BAMBOO_PASSWORD:
             raise QError("Password for Bamboo BAMBOO_PASSWORD is not set.")
-        return (QSettings.BAMBOO_USER, QSettings.BAMBOO_PASSWORD)
+        return (self.settings.BAMBOO_USER, self.settings.BAMBOO_PASSWORD)

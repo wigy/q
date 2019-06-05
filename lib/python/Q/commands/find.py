@@ -25,7 +25,7 @@ class CommandFind(Command):
         args = '"' + args.replace('"', '\\"') + '"'
         out = Grep().run("-r", "-l", "-i", args, QSettings.WORKDIR, get_output=True)
         hits = {}
-        codes = self.ticket.all_codes()
+        codes = self.app.all_codes()
         for filename in out.split("\n"):
             if filename == '' or filename[-1] == '~':
                 continue

@@ -72,4 +72,4 @@ class CommandStart(Command):
         Git()('checkout '+self.ticket.branch_name())
 
         # Start working.
-        Q('work', 'switch')
+        self.Q('work', 'switch')

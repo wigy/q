@@ -68,6 +68,9 @@ class Ticket:
                   }
 
     def __init__(self, app, code=None):
+        from .command import Command
+        if isinstance(app, Command):
+            raise Exception('Ticket constructor myst be called with Project instance.')
         self.app = app
         self.settings = app.settings
         self.root_path = self.settings.WORKDIR
@@ -268,7 +271,7 @@ class Ticket:
             return self['Branch']
         ret = self.settings.BRANCH_NAMING
         ret = ret.replace('%c', self.code)
-        ret = ret.replace('%u', Git().username())
+        ret = ret.replace('%u', Git(self.settings).username())
         if self.is_epic():
             title = 'master'
         else:
@@ -389,36 +392,10 @@ class Ticket:
         if len(work):
             return work[-1].is_running()
 
-    @classmethod
-    def branch_number_of(self, name):
-        """
-        Get the ticket number from branch name.
-        """
-        g = re.match(self.settings.TICKET_BRANCH_REGEX, name)
-        if g:
-            return g.group(1)
-
-    def all_codes(self):
-        """
-        Get the list of all codes for tickets found.
-        """
-        from q import Q
-        if not self.settings.WORKDIR:
-            raise QError("Ticket storage directory WORKDIR is not set.")
-        ret = []
-        if not os.path.isdir(self.settings.WORKDIR):
-            Q.wr("Initialize", "Creating ticket directory '%s'.", self.settings.WORKDIR)
-            mkpath(self.settings.WORKDIR)
-        for p in os.listdir(self.settings.WORKDIR):
-            if os.path.isfile(self.settings.WORKDIR+"/"+p+"/README"):
-                ret.append(p)
-        return ret
-
-    @classmethod
-    def stash_names(cls):
+    def stash_names(self):
         ret = {}
         from helper import Git
-        for line in Git()('stash list', get_output=True, no_echo=True).strip().split("\n"):
+        for line in Git(self.settings)('stash list', get_output=True, no_echo=True).strip().split("\n"):
             hit = re.match(r'(stash@\{.+\}).*QuickAutoStash_(.+)',line.strip())
             if hit:
                 ret[hit.group(2)] = hit.group(1)
@@ -443,16 +420,16 @@ class Ticket:
         """
         from q import Q
         from helper import Git
-        Q('my','revert')
-        if Git().has_changes():
-            Git()('stash save --include-untracked QuickAutoStash_'+self.code)
+        self.app.cmd.Q('my','revert')
+        if Git(self.settings).has_changes():
+            Git(self.settings)('stash save --include-untracked QuickAutoStash_'+self.code)
 
     def has_stash(self):
         """
         Return stash name, if the ticket has stashed data.
         """
         from helper import Git
-        stashes = Ticket.stash_names()
+        stashes = self.stash_names()
         if self.code in stashes:
             return stashes[self.code]
 
@@ -467,13 +444,13 @@ class Ticket:
             self.wr("Switching to DB '%s'." % db)
             self.app.change_db(db)
             # TODO: Restart servers
-        Git()('checkout '+self.branch_name())
+        Git(self.settings)('checkout '+self.branch_name())
         stash = self.has_stash()
         if stash:
-            Git()('stash pop '+stash)
+            Git(self.settings)('stash pop '+stash)
         if self.settings.USE_SUBMODULES:
-            Git()('submodule update', chdir=self.settings.APPDIR)
-        Q('my','apply')
+            Git(self.settings)('submodule update', chdir=self.settings.APPDIR)
+        self.app.cmd.Q('my','apply')
 
     def changed_files(self):
         """
@@ -481,7 +458,7 @@ class Ticket:
         """
         from helper import Git
         # TODO: We need to check if merge base is a ticket and if it is Done, use master perhaps.
-        return Git()('diff --name-only '+self.merge_base(), get_output=True).strip().split("\n")
+        return Git(self.settings)('diff --name-only '+self.merge_base(), get_output=True).strip().split("\n")
 
     def finished(self):
         """
@@ -496,7 +473,7 @@ class Ticket:
         from helper import Git
         if self['Base']:
             return self['Base']
-        return Git().merge_base()
+        return Git(self.settings).merge_base()
 
     def refresh(self):
         """
@@ -575,5 +552,5 @@ class Ticket:
         return ret
 
     def save_settings(self):
-        settings = open(self.settings.find(), 'r').read()
+        settings = open(self.settings.APPSETTINGS, 'r').read()
         open(self.path() + '/.q', 'w').write(settings)

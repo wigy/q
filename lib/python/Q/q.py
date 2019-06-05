@@ -49,9 +49,25 @@ class Q:
 
     def __init__(self, *argv):
         """
-        Parse and run.
+        Set up the projects.
         """
-        self.parse(*argv)
+        if len(Q.projects):
+            raise Exception('Re-running Q' + repr(argv) + ' directly is not permitted anymore.\nPlease use self.Q() instead.')
+        if len(argv) > 0 and argv[0] in ['help', 'settings']:
+            Q.projects.append(QProject(QSettings(), self))
+        else:
+            path = QSettings.find(os.getcwd())
+            if not path:
+                raise QError("Project is not defined. Do you have settings file '.q' created?\nUse " + Q.COMMAND + "q settings save" + Q.ERROR + " to create new settings file template.")
+            settings = QSettings.load(path)
+            project = QProject.create(settings, self)
+            Q.projects.append(project)
+            if settings.LINKED_PROJECTS:
+                for path in settings.LINKED_PROJECTS.split(':'):
+                    path = re.sub('\/$', '', path)
+                    settings = QSettings.load(QSettings.find(path))
+                    project = QProject.create(settings, self)
+                    Q.projects.append(project)
 
     @staticmethod
     def wr(channel, *msg):
@@ -70,25 +86,6 @@ class Q:
 
     def parse(self, *argv):
         """
-        Set up the project and then parse and run commands.
+        Parse and run command.
         """
-        try:
-            if len(argv) > 0 and argv[0] in ['help', 'settings']:
-                Q.projects.append(QProject(QSettings()))
-            else:
-                path = QSettings.find(os.getcwd())
-                if not path:
-                    raise QError("Project is not defined. Do you have settings file '.q' created?\nUse " + Q.COMMAND + "q settings save" + Q.ERROR + " to create new settings file template.")
-                settings = QSettings.load(path)
-                project = QProject.create(settings)
-                Q.projects.append(project)
-                if settings.LINKED_PROJECTS:
-                    for path in settings.LINKED_PROJECTS.split(':'):
-                        path = re.sub('\/$', '', path)
-                        settings = QSettings.load(QSettings.find(path))
-                        project = QProject.create(settings)
-                        Q.projects.append(project)
-            Q.projects[0].parse(*argv)
-        except QError as e:
-            Q.wr('Fail', Q.ERROR + "ERROR: " + str(e) + Q.END)
-            sys.exit(1)
+        Q.projects[0].parse(*argv)

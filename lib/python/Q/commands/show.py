@@ -3,7 +3,6 @@ import os
 import glob
 
 from ..error import QError
-from ..settings import QSettings
 from ..command import AutoLoadCommand
 
 

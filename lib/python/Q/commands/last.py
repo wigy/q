@@ -23,7 +23,7 @@ class CommandLast(Command):
             LIMIT = str(datetime.date.today() + datetime.timedelta(days=-7))
 
         results = {}
-        for code in self.ticket.all_codes():
+        for code in self.app.all_codes():
             self.load(code)
             started = self.ticket['Started'][0:10]
             finished = None

@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 from ..error import QError
-from ..settings import QSettings
 from ..command import AutoGoCommand
 from ..helper import Git
 
@@ -13,10 +12,9 @@ class CommandPublish(AutoGoCommand):
         """
         usage: q publish [<code>] [--all]
         """
-        from ..q import Q
-        if Git().has_changes():
-            Q('commit')
+        if Git(self.settings).has_changes():
+            self.Q('commit')
         if self.opts.get('all'):
-            Git()('push')
+            Git(self.settings)('push')
         else:
-            Git()('push ' + QSettings.GIT_REMOTE + ' '+self.ticket.branch_name())
+            Git(self.settings)('push ' + self.settings.GIT_REMOTE + ' '+self.ticket.branch_name())

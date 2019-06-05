@@ -18,8 +18,9 @@ class QProject:
     """
     Base functionality for querying and executing tasks for the application project.
     """
-    def __init__(self, settings):
+    def __init__(self, settings, q):
         self.settings = settings
+        self.q = q
 
     def __repr__(self):
         if self.settings.APPSETTINGS:
@@ -57,8 +58,41 @@ class QProject:
                 return p+"/"+basename
         raise QError("Cannot find a file '%s'.", basename)
 
+    def all_codes(self):
+        """
+        Collect a list of all ticket codes of this project.
+        """
+        from q import Q
+        if not self.settings.WORKDIR:
+            raise QError("Ticket storage directory WORKDIR is not set.")
+        if not os.path.isdir(self.settings.WORKDIR):
+            Q.wr("Initialize", "Creating ticket directory '%s'.", self.settings.WORKDIR)
+            mkpath(self.settings.WORKDIR)
+        ret = []
+        for p in os.listdir(self.settings.WORKDIR):
+            if os.path.isfile(self.settings.WORKDIR+"/"+p+"/README"):
+                ret.append(p)
+        return ret
+
+    def load_ticket(self, code):
+        """
+        Load a ticket form this project.
+        """
+        ticket = Ticket(self, code)
+        ticket.load()
+        return ticket
+
+    def all_tickets(self):
+        """
+        Collect a list of all tickets of this project.
+        """
+        ret = []
+        for code in self.all_codes():
+            ret.append(self.load_ticket(code))
+        return ret
+
     @classmethod
-    def create(cls, settings):
+    def create(cls, settings, q):
         project_path = os.path.dirname(settings.APPSETTINGS) + '/.q.project.py'
         if not os.path.exists(project_path) or os.path.getmtime(project_path) < os.path.getmtime(settings.APPSETTINGS):
             if not settings.APP_TICKETING:
@@ -85,4 +119,4 @@ class Project(QProject, APP_TICKETING, APP_RELEASING, APP_REVIEWING, APP_BUILDIN
         except NameError as err:
             raise QError("Invalid configuration: %r.", err)
 
-        return Project(settings)
+        return Project(settings, q)

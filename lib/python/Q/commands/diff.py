@@ -18,11 +18,10 @@ class CommandDiff(AutoGoCommand):
         """
         usage: q diff [<code>] [all]
         """
-        from ..q import Q
-        Q('my','revert')
+        self.Q('my','revert')
         if self.args and (self.args[0] == 'all'):
             merge_base = self.ticket.merge_base()
             Git()('diff --color '+merge_base)
         else:
             Git()('diff --color')
-        Q('my','apply')
+        self.Q('my','apply')

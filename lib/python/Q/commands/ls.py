@@ -77,17 +77,17 @@ class CommandLs(Command):
         from ..q import Q
         current = self.current_branch_number()
         if current:
-            Q('my','revert')
+            self.Q('my','revert')
         modified = {}
         if current and Git(self.settings).has_changes():
             modified[current]=True
-        for code in Ticket.stash_names():
+        for code in self.ticket.stash_names():
             modified[code]=True
         done = []
         working = []
         done_but_current = []
         show_all = self.opts.get('all')
-        codes = self.ticket.all_codes()
+        codes = self.app.all_codes()
         codes.sort(reverse = True)
         # Run separate refresh round to get prints out of the listing.
         for code in codes:
@@ -115,6 +115,6 @@ class CommandLs(Command):
             elif len(done_but_current):
                 self.show_ticket_tree(done_but_current, current=current, channel='Old Tickets', modified=modified)
 
-        Q('work', '--today')
+        self.Q('work', '--today')
         if current:
-            Q('my','apply')
+            self.Q('my','apply')

@@ -1,4 +1,3 @@
-from .settings import QSettings
 from .error import QError
 from .helper import Git
 
@@ -61,15 +60,15 @@ class ReleasingByMerge(ReleasingMixin):
         Merge the ticket.
         """
         from .q import Q
-        if not QSettings.RELEASE_BRANCH:
+        if not self.settings.RELEASE_BRANCH:
             raise QError("Must set RELEASE_BRANCH in order to use ReleasingByMerge.")
-        Q('my','revert')
-        Git()('checkout "'+ QSettings.RELEASE_BRANCH + '"')
+        self.Q('my','revert')
+        Git()('checkout "'+ self.settings.RELEASE_BRANCH + '"')
         Git()('pull')
         Git()('merge "'+ ticket.branch_name() + '"')
-        Q('my','apply')
-        Git()('push "' + QSettings.GIT_REMOTE + '" "' + QSettings.RELEASE_BRANCH + '"')
+        self.Q('my','apply')
+        Git()('push "' + self.settings.GIT_REMOTE + '" "' + self.settings.RELEASE_BRANCH + '"')
         Git()('checkout "'+ ticket.branch_name() + '"')
-        Q('done')
-        Git()('checkout "'+ QSettings.RELEASE_BRANCH + '"')
+        self.Q('done')
+        Git()('checkout "'+ self.settings.RELEASE_BRANCH + '"')
         return True

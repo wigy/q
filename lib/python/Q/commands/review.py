@@ -88,9 +88,9 @@ class CommandReview(AutoGoCommand):
             self.ticket.set_status('Reviewing')
             self.run_success()
             return
-        Q('update')
-        Q('publish')
-        Q('my','revert')
+        self.Q('update')
+        self.Q('publish')
+        self.Q('my','revert')
         file = self._make_diff()
         rid = self.app.review_start(self.ticket, file)
         if rid is None:
@@ -100,7 +100,7 @@ class CommandReview(AutoGoCommand):
         self.ticket['Review ID'] = rid
         self.ticket.save()
         self.app.start_review_on_ticket(self.ticket, self.app.review_url(rid))
-        Q('my','apply')
+        self.Q('my','apply')
         self.wr("Review is ready!")
         url = self.app.review_url(rid)
         if url is not None:
@@ -119,11 +119,11 @@ class CommandReview(AutoGoCommand):
         rid = self.ticket['Review ID']
         if rid is None:
             raise QError("Ticket has not yet review.")
-        Q('publish')
-        Q('my','revert')
+        self.Q('publish')
+        self.Q('my','revert')
         file = self._make_diff()
         self.app.review_update(self.ticket, file)
-        Q('my','apply')
+        self.Q('my','apply')
         self.ticket.save()
         self.wr("Review is updated!")
         url = self.app.review_url(rid)

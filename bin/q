@@ -11,4 +11,10 @@ if __name__ == "__main__":
     import os
     sys.path.append(os.path.realpath(os.path.dirname(os.path.realpath(sys.argv[0])) + '/../lib/python'))
     from Q.q import Q
-    Q(*sys.argv[1:])
+    from Q.error import QError
+    try:
+        q = Q(*sys.argv[1:])
+        q.parse(*sys.argv[1:])
+    except QError as e:
+        Q.wr('Fail', Q.ERROR + "ERROR: " + str(e) + Q.END)
+        sys.exit(1)

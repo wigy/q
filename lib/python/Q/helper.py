@@ -346,6 +346,7 @@ class Git(SystemCall):
         """
         Find the files not in git.
         """
+        print self.settings
         ret = self.run('ls-files -o --exclude-standard', get_output=True, chdir=self.settings.APPDIR).strip().split("\n")
         if len(ret) == 1 and ret[0] == "":
             return []

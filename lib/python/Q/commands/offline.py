@@ -24,7 +24,7 @@ class CommandOffline(Command):
           else:
             raise QError('Invalid argument ' + repr(self.args[0]))
           QSettings.OFFLINE_MODE = val
-          Q('settings', 'save')
+          self.Q('settings', 'save')
 
         self.wr(Q.TITLE + "\nOffline mode: " + Q.VAR + str(QSettings.OFFLINE_MODE) + Q.END + "\n")
         if QSettings.OFFLINE_MODE:

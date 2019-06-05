@@ -3,7 +3,6 @@ import json
 import urllib
 import re
 
-from .settings import QSettings
 from .error import QError
 from .ticket import Ticket
 from .helper import Curl, Requests
@@ -19,10 +18,10 @@ class TicketingMixin:
         """
         Get ticketing credentials and raise error if not defined.
         """
-        user = QSettings.TICKETING_USER
+        user = self.settings.TICKETING_USER
         if not user:
             raise QError("Must set TICKETING_USER in .q.")
-        password = QSettings.TICKETING_PASS
+        password = self.settings.TICKETING_PASS
         if not password:
             raise QError("Must set TICKETING_PASS in .q.")
         return user, password
@@ -103,7 +102,7 @@ class TicketingByTrac(TicketingMixin):
 
     def proxy(self):
         user, password = self._get_user_and_password()
-        url = QSettings.TICKETING_TRAC_API
+        url = self.settings.TICKETING_TRAC_API
         if not url:
             raise QError("Must set TICKETING_TRAC_API in .q when using TicketingByTrac mixin.")
         parts = url.split('://')
@@ -141,7 +140,7 @@ class TicketingByTrac(TicketingMixin):
             raise QError("Cannot find ticket '" + code + "'.")
 
     def ticket_url(self, ticket):
-        return QSettings.TICKETING_TRAC_API + "/ticket/" + str(ticket.code)
+        return self.settings.TICKETING_TRAC_API + "/ticket/" + str(ticket.code)
 
     def data2ticket(self, cmd, data):
         code = str(data[0])
@@ -164,11 +163,11 @@ class TicketingByTrac(TicketingMixin):
 
     def start_work_on_ticket(self, ticket):
         self._set_ticket(int(ticket.code), '',
-                  owner=QSettings.TICKETING_USER,
+                  owner=self.settings.TICKETING_USER,
                   status='implementing',
                   substatus='-',
                   branch=ticket['Branch'],
-                  milestone=QSettings.TRAC_WORKING_MILESTONE)
+                  milestone=self.settings.TRAC_WORKING_MILESTONE)
 
     def done_work_on_ticket(self, ticket):
         self._set_ticket(int(ticket.code), '',
@@ -180,7 +179,7 @@ class TicketingByTrac(TicketingMixin):
         id = proxy.ticket.create(ticket['Title'], ticket['Notes'], {
             'status': '-',
             'substatus': '-',
-            'milestone': QSettings.TRAC_INITIAL_MILESTONE})
+            'milestone': self.settings.TRAC_INITIAL_MILESTONE})
         if not id:
             raise QError("Failed to create new ticket.")
         Q.wr('Ticketing', "New ticket %r created in the remote." % id)
@@ -223,7 +222,7 @@ class ManualTicketing(TicketingMixin):
         pass
 
     def ticket_url(self, ticket):
-        url = QSettings.TICKET_URL
+        url = self.settings.TICKET_URL
         if url:
             url = url.replace('%c', str(ticket.code))
             return url
@@ -246,7 +245,7 @@ class TicketingByVSTS(TicketingMixin):
         """
         content_type = None
         user, password = self._get_user_and_password()
-        instance = QSettings.VSTS_INSTANCE
+        instance = self.settings.VSTS_INSTANCE
         if not instance:
             raise QError("Must set VSTS_INSTANCE in .q.")
 
@@ -310,7 +309,7 @@ class TicketingByVSTS(TicketingMixin):
         else:
             state = 'In Progress'
         patch = [{'op': 'replace', 'path': '/fields/System.State', 'value': state},
-                 {'op': op, 'path': '/fields/System.AssignedTo', 'value': QSettings.VSTS_FULL_NAME}]
+                 {'op': op, 'path': '/fields/System.AssignedTo', 'value': self.settings.VSTS_FULL_NAME}]
         self._vsts_query('wit/workitems/' + ticket.code, patch=patch)
 
     def done_work_on_ticket(self, ticket):
@@ -350,7 +349,7 @@ class TicketingByVSTS(TicketingMixin):
         self._vsts_query('wit/workitems/' + ticket.code, patch=patch)
 
     def ticket_url(self, ticket):
-        url = QSettings.TICKET_URL
+        url = self.settings.TICKET_URL
         if url:
             url = url.replace('%c', str(ticket.code))
             return url
@@ -369,32 +368,32 @@ class TicketingByAtlassian(TicketingMixin):
 
     def ticket_url(self, ticket):
         self._ticketing_check()
-        return QSettings.ATLASSIAN_URL + 'browse/' + ticket.code
+        return self.settings.ATLASSIAN_URL + 'browse/' + ticket.code
 
     def start_work_on_ticket(self, ticket):
         """
         Assign ticket to myself and look for transition to 'In Progress' and do it if found.
         """
-        data = {"name": QSettings.TICKETING_USER.split('@')[0]}
-        resp = Requests()(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/assignee', put=data, auth=self._ticketing_auth())
+        data = {"name": self.settings.TICKETING_USER.split('@')[0]}
+        resp = Requests()(self.settings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/assignee', put=data, auth=self._ticketing_auth())
         if (resp.status_code != 204):
             raise QError("Claiming ownership of the ticket failed.")
-        self._set_ticket_status(ticket, QSettings.ATLASSIAN_STATUS_WORKING)
+        self._set_ticket_status(ticket, self.settings.ATLASSIAN_STATUS_WORKING)
 
     def start_review_on_ticket(self, ticket, url):
-        self._set_ticket_status(ticket, QSettings.ATLASSIAN_STATUS_REVIEWING)
+        self._set_ticket_status(ticket, self.settings.ATLASSIAN_STATUS_REVIEWING)
 
     def done_work_on_ticket(self, ticket):
-        self._set_ticket_status(ticket, QSettings.ATLASSIAN_STATUS_DONE)
+        self._set_ticket_status(ticket, self.settings.ATLASSIAN_STATUS_DONE)
 
     def cancel_work_on_ticket(self, ticket):
-        self._set_ticket_status(ticket, QSettings.ATLASSIAN_STATUS_AVAILABLE)
+        self._set_ticket_status(ticket, self.settings.ATLASSIAN_STATUS_AVAILABLE)
 
     def reopen_work_on_ticket(self, ticket):
-        self._set_ticket_status(ticket, QSettings.ATLASSIAN_STATUS_WORKING)
+        self._set_ticket_status(ticket, self.settings.ATLASSIAN_STATUS_WORKING)
 
     def _ticketing_transition(self, ticket, name):
-        resp = Requests()(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', auth=self._ticketing_auth())
+        resp = Requests()(self.settings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', auth=self._ticketing_auth())
         data = resp.json()
         for tr in data['transitions']:
             if tr['name'].upper() == name.upper():
@@ -405,25 +404,25 @@ class TicketingByAtlassian(TicketingMixin):
         """
         Check that all necessary settings are set.
         """
-        if not QSettings.ATLASSIAN_URL:
+        if not self.settings.ATLASSIAN_URL:
             raise QError("Base URL for Atlassian ATLASSIAN_URL is not set.")
 
     def _ticketing_auth(self):
         """
         Authentication parameter.
         """
-        if not QSettings.TICKETING_USER:
+        if not self.settings.TICKETING_USER:
             raise QError("User for Atlassian TICKETING_USER is not set.")
-        if not QSettings.TICKETING_PASSWORD:
+        if not self.settings.TICKETING_PASSWORD:
             raise QError("Password for Atlassian TICKETING_PASSWORD is not set.")
-        return (QSettings.TICKETING_USER, QSettings.TICKETING_PASSWORD)
+        return (self.settings.TICKETING_USER, self.settings.TICKETING_PASSWORD)
 
     def _get_ticket(self, code):
         """
         Fetch the ticket data for the given ticket code.
         """
         self._ticketing_check()
-        resp = Requests()(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + code, auth=self._ticketing_auth())
+        resp = Requests()(self.settings.ATLASSIAN_URL + '/rest/api/2/issue/' + code, auth=self._ticketing_auth())
         return resp.json()
 
     def _set_ticket_status(self, ticket, status):
@@ -433,6 +432,6 @@ class TicketingByAtlassian(TicketingMixin):
         self.cmd.wr("Setting ticket status of %r to %r.", ticket.code, status)
         id = self._ticketing_transition(ticket, status)
         data = {"transition": {"id": id}}
-        resp = Requests()(QSettings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', post=data, auth=self._ticketing_auth())
+        resp = Requests()(self.settings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', post=data, auth=self._ticketing_auth())
         if (resp.status_code != 204):
             raise QError("Setting ticket %r state failed." % status)

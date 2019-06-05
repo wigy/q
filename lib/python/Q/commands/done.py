@@ -27,7 +27,7 @@ class CommandDone(AutoGoCommand):
         self.ticket.set_status('Done')
 
         # Relink old children in progress.
-        for code in self.ticket.all_codes():
+        for code in self.app.all_codes():
             ticket = self.get_ticket(code)
             if ticket['Base'] == self.ticket['Branch'] and ticket['Status'] != 'Done':
                 new_base = self.ticket['Base']
