@@ -144,7 +144,7 @@ class TicketingByTrac(TicketingMixin):
 
     def data2ticket(self, cmd, data):
         code = str(data[0])
-        ret = Ticket(cmd, code)
+        ret = Ticket(self, code)
         ret['Owner'] = data[3]['owner']
         ret['Title'] = data[3]['summary'].strip()
         ret['Notes'] = data[3]['description'].strip()
@@ -159,7 +159,7 @@ class TicketingByTrac(TicketingMixin):
         return ret
 
     def fetch_ticket(self, cmd, code):
-        return self.data2ticket(cmd, self._get_ticket(code))
+        return self.data2ticket(self, self._get_ticket(code))
 
     def start_work_on_ticket(self, ticket):
         self._set_ticket(int(ticket.code), '',
@@ -204,7 +204,7 @@ class ManualTicketing(TicketingMixin):
         cmd.wr("Creating a copy of the ticket manually.")
         cmd.wr("Please copy paste the title of the ticket:")
         title = raw_input()
-        ret = Ticket(cmd, code)
+        ret = Ticket(self, code)
         ret['Title'] = title.strip()
         ret.set_status("Started")
         return ret
@@ -274,7 +274,7 @@ class TicketingByVSTS(TicketingMixin):
                 url += '?'
             url += urllib.urlencode(params)
 
-        data = Curl()(url, user=user, password=password, post=post, patch=patch, content_type=content_type)
+        data = Curl(self.settings)(url, user=user, password=password, post=post, patch=patch, content_type=content_type)
         if not data:
             raise QError("_vsts_query() failed.")
         data = json.loads(data)
@@ -284,7 +284,7 @@ class TicketingByVSTS(TicketingMixin):
 
     def data2ticket(self, cmd, data):
         code = str(data['id'])
-        ret = Ticket(cmd, code)
+        ret = Ticket(self, code)
         ret['Ticket Info'] = data['fields'].get('System.WorkItemType')
         ret['Title'] = data['fields'].get('System.Title', '')
         if ret['Ticket Info'] == 'Bug':
@@ -295,7 +295,7 @@ class TicketingByVSTS(TicketingMixin):
         return ret
 
     def fetch_ticket(self, cmd, code):
-        return self.data2ticket(cmd, self._vsts_query('wit/workitems/' + code))
+        return self.data2ticket(self, self._vsts_query('wit/workitems/' + code))
 
     def start_work_on_ticket(self, ticket):
         old = self._vsts_query('wit/workitems/' + ticket.code)
@@ -360,7 +360,7 @@ class TicketingByAtlassian(TicketingMixin):
 
     def fetch_ticket(self, cmd, code):
         data = self._get_ticket(code)
-        ret = Ticket(cmd, code)
+        ret = Ticket(self, code)
         ret['Owner'] = data['fields']['creator']['name']
         ret['Title'] = data['fields']['summary']
         ret['Notes'] = data['fields']['description']
@@ -375,7 +375,7 @@ class TicketingByAtlassian(TicketingMixin):
         Assign ticket to myself and look for transition to 'In Progress' and do it if found.
         """
         data = {"name": self.settings.TICKETING_USER.split('@')[0]}
-        resp = Requests()(self.settings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/assignee', put=data, auth=self._ticketing_auth())
+        resp = Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/assignee', put=data, auth=self._ticketing_auth())
         if (resp.status_code != 204):
             raise QError("Claiming ownership of the ticket failed.")
         self._set_ticket_status(ticket, self.settings.ATLASSIAN_STATUS_WORKING)
@@ -393,7 +393,7 @@ class TicketingByAtlassian(TicketingMixin):
         self._set_ticket_status(ticket, self.settings.ATLASSIAN_STATUS_WORKING)
 
     def _ticketing_transition(self, ticket, name):
-        resp = Requests()(self.settings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', auth=self._ticketing_auth())
+        resp = Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', auth=self._ticketing_auth())
         data = resp.json()
         for tr in data['transitions']:
             if tr['name'].upper() == name.upper():
@@ -422,7 +422,7 @@ class TicketingByAtlassian(TicketingMixin):
         Fetch the ticket data for the given ticket code.
         """
         self._ticketing_check()
-        resp = Requests()(self.settings.ATLASSIAN_URL + '/rest/api/2/issue/' + code, auth=self._ticketing_auth())
+        resp = Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/2/issue/' + code, auth=self._ticketing_auth())
         return resp.json()
 
     def _set_ticket_status(self, ticket, status):
@@ -432,6 +432,6 @@ class TicketingByAtlassian(TicketingMixin):
         self.cmd.wr("Setting ticket status of %r to %r.", ticket.code, status)
         id = self._ticketing_transition(ticket, status)
         data = {"transition": {"id": id}}
-        resp = Requests()(self.settings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', post=data, auth=self._ticketing_auth())
+        resp = Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/transitions', post=data, auth=self._ticketing_auth())
         if (resp.status_code != 204):
             raise QError("Setting ticket %r state failed." % status)

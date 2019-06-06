@@ -2,7 +2,6 @@
 import os
 
 from ..error import QError
-from ..settings import QSettings
 from ..command import Command
 from ..helper import Git
 from ..file import QFile
@@ -46,23 +45,23 @@ class CommandMy(Command):
             else:
                 self.wr("No private changes found. Use "+Q.COMMAND+"q my save"+Q.END+" to create from the current state.")
         elif self.args[0] == "save":
-            Git()('--no-pager diff --color')
+            Git(self.settings)('--no-pager diff --color')
             self.wr("Record these changes as private. Are you sure (y/n)?")
             resp = raw_input()
             if resp!='y':
                 self.wr("Canceled")
             else:
-                Git()('diff > '+path)
+                Git(self.settings)('diff > '+path)
             QFile(flag).write('Private saved!')
         elif self.args[0] == "revert":
             if not path or not os.path.isfile(path) or not is_applied:
                 return
-            Git().patch(path, reverse = True)
+            Git(self.settings).patch(path, reverse = True)
             os.remove(flag)
         elif self.args[0] == "apply":
             if not path or not os.path.isfile(path) or is_applied:
                 return
-            Git().patch(path)
+            Git(self.settings).patch(path)
             QFile(flag).write('Private diff applied!')
         elif self.args[0] == "drop":
             QFile(path).drop()

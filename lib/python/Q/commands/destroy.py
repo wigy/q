@@ -1,6 +1,5 @@
 from ..command import AutoGoCommand
 from ..error import QError
-from ..settings import QSettings
 from ..helper import Git
 
 
@@ -14,7 +13,7 @@ class CommandDestroy(AutoGoCommand):
         usage: q destroy [<code>]
                <code> - A ticket number.
         """
-        Git()('push ' + QSettings.GIT_REMOTE + ' :'+self.ticket.branch_name())
-        Git()('checkout '+QSettings.LOBBY_BRANCH)
-        Git()('branch -D '+self.ticket.branch_name())
+        Git(self.settings)('push ' + self.settings.GIT_REMOTE + ' :'+self.ticket.branch_name())
+        Git(self.settings)('checkout '+self.settings.LOBBY_BRANCH)
+        Git(self.settings)('branch -D '+self.ticket.branch_name())
         self.ticket.destroy()

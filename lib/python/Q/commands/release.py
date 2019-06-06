@@ -2,7 +2,6 @@
 import time
 
 from ..error import QError
-from ..settings import QSettings
 from ..command import AutoGoCommand
 from ..helper import Git
 

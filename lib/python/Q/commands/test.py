@@ -1,6 +1,5 @@
 from ..command import AutoGoCommand
 from ..error import QError
-from ..settings import QSettings
 
 
 class CommandTest(AutoGoCommand):
@@ -45,9 +44,9 @@ class CommandTest(AutoGoCommand):
                 self.ticket.save()
         elif self.args[0] == 'run':
 
-            if QSettings.DB_NAME:
+            if self.settings.DB_NAME:
                 old_db = ['db']
-                new_db = QSettings.TEST_DATABASE
+                new_db = self.settings.TEST_DATABASE
             else:
                 old_db = None
                 new_db = None

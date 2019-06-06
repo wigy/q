@@ -59,7 +59,7 @@ class ReviewMixin:
 
     def edit_review_comments(self, ticket):
         path = os.path.join(ticket.path(), "review_text.txt")
-        Edit()(path, light=True)
+        Edit(self.settings)(path, light=True)
         return file(path, 'r').read()
 
 class NoReview(ReviewMixin):
@@ -132,7 +132,7 @@ class ReviewByReviewBoard(ReviewMixin):
             base = base[0:-1]
         if url == '' or url[0] != '/':
             url = '/' + url
-        content = Curl()(base +  "/api" + url, post=post, put=put, quiet=quiet, upload=upload, user=self.settings.REVIEW_USER, password=self.settings.REVIEW_PASS)
+        content = Curl(self.settings)(base +  "/api" + url, post=post, put=put, quiet=quiet, upload=upload, user=self.settings.REVIEW_USER, password=self.settings.REVIEW_PASS)
         try:
             ret = json.loads(content)
         except ValueError, e:
@@ -251,14 +251,14 @@ class ReviewByGerrit(ReviewMixin):
         base = self.settings.BASE_BRANCH
         if ticket['Base']:
             sq = 'squash/' + ticket['Base']
-            if Git().branch_exists(sq):
+            if Git(self.settings).branch_exists(sq):
                 base = sq
         branch = ticket.branch_name()
         review_branch = 'squash/' + ticket.branch_name()
-        if Git().branch_exists(review_branch):
-            Git()('branch -D ' + review_branch)
-        Git()('checkout -b ' + review_branch + ' ' + base)
-        out = Git()('merge --squash ' + branch, stderr=True, get_output=True)
+        if Git(self.settings).branch_exists(review_branch):
+            Git(self.settings)('branch -D ' + review_branch)
+        Git(self.settings)('checkout -b ' + review_branch + ' ' + base)
+        out = Git(self.settings)('merge --squash ' + branch, stderr=True, get_output=True)
         if out.find('CONFLICT') >= 0:
             raise QError('Merge conflict.')
 
@@ -269,10 +269,10 @@ class ReviewByGerrit(ReviewMixin):
         title = self.get_review_title(ticket)
         title = title.replace('"', '\\"')
 
-        Git()('commit', '-a', '-m "' + title + '"', '-e')
+        Git(self.settings)('commit', '-a', '-m "' + title + '"', '-e')
 
         # Find the Change-Id and store it as extra info.
-        out = Git()('log -1', get_output=True)
+        out = Git(self.settings)('log -1', get_output=True)
         change_id = None
         for line in out.split("\n"):
             line = line.strip()
@@ -281,10 +281,10 @@ class ReviewByGerrit(ReviewMixin):
                 change_id = match.group(1)
                 break
         if change_id is None:
-            Git()('checkout ' + branch)
+            Git(self.settings)('checkout ' + branch)
             raise QError('Cannot find Change-Id from git log: %r', out)
 
-        out = Git()('push gerrit HEAD:refs/for/master', '--no-thin', stderr=True, get_output=True)
+        out = Git(self.settings)('push gerrit HEAD:refs/for/master', '--no-thin', stderr=True, get_output=True)
 
         # Find the ID of the review by scanning URL from output.
         revid = None
@@ -293,10 +293,10 @@ class ReviewByGerrit(ReviewMixin):
         if match:
             revid = int(match.group(2))
         else:
-            Git()('checkout ' + branch)
+            Git(self.settings)('checkout ' + branch)
             raise QError('Cannot find review URL and ID from Gerrit push: %r', out)
 
-        Git()('checkout ' + branch)
+        Git(self.settings)('checkout ' + branch)
 
         ticket['Review Info'] = change_id
         return revid
@@ -308,9 +308,9 @@ class ReviewByGerrit(ReviewMixin):
         title = self.get_review_title(ticket)
         title = title.replace('"', '\\"')
 
-        Git()('commit', '-a', '-m "' + title + '\n\nChange-Id: ' + ticket['Review Info'] + '"', '-e')
-        Git()('push gerrit HEAD:refs/for/master', '--no-thin')
-        Git()('checkout ' + branch)
+        Git(self.settings)('commit', '-a', '-m "' + title + '\n\nChange-Id: ' + ticket['Review Info'] + '"', '-e')
+        Git(self.settings)('push gerrit HEAD:refs/for/master', '--no-thin')
+        Git(self.settings)('checkout ' + branch)
 
     def review_status(self, review_id):
         # TODO: Gerrit: Implement review_status().
@@ -333,7 +333,7 @@ class ReviewByVSTS(ReviewMixin):
     def _find_vsts_git_repository(self):
         """Scan repositories and find the ID of this repository."""
         repo_name = None
-        for line in Git()('remote -v', get_output=True).split("\n"):
+        for line in Git(self.settings)('remote -v', get_output=True).split("\n"):
             parts = re.split('\s', line)
             if len(parts) >= 3:
                 repo_name = parts[1].split('/')[-1]
@@ -420,7 +420,7 @@ class ReviewByBitbucket(ReviewMixin):
             },
             "close_source_branch": False
         }
-        resp = Requests()(url, post=out, auth=self._review_auth())
+        resp = Requests(self.settings)(url, post=out, auth=self._review_auth())
         try:
             data = resp.json()
         except simplejson.errors.JSONDecodeError:
@@ -456,7 +456,7 @@ class ReviewByBitbucket(ReviewMixin):
     def review_status(self, review_id):
         repo = "%s/%s" % (self.settings.BITBUCKET_PROJECT, self.settings.BITBUCKET_REPO)
         url = 'https://bitbucket.org/api/2.0/repositories/%s/pullrequests/%s' % (repo, review_id)
-        resp = Requests()(url, auth=self._review_auth())
+        resp = Requests(self.settings)(url, auth=self._review_auth())
         if not resp:
             return None
         data = resp.json()

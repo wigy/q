@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+import glob
 
 from .error import QError
 from .building import NoBuild, BuildByBamboo
@@ -74,9 +75,20 @@ class QProject:
                 ret.append(p)
         return ret
 
+    def num2code(self, num):
+        """
+        Convert ticket number to ticket code.
+        """
+        for path in glob.glob(self.settings.WORKDIR + '/*' + num + '*'):
+            code = path.split('/')[-1]
+            match = re.match(self.settings.TICKET_NUMBER_REGEX, code)
+            if match and int(match.groups()[1]) == int(num):
+                return code
+        return None
+
     def load_ticket(self, code):
         """
-        Load a ticket form this project.
+        Load a ticket from this project.
         """
         ticket = Ticket(self, code)
         ticket.load()
@@ -90,6 +102,12 @@ class QProject:
         for code in self.all_codes():
             ret.append(self.load_ticket(code))
         return ret
+
+    def Q(self, *args):
+        """
+        Call Q again.
+        """
+        self.q.parse(*args)
 
     @classmethod
     def create(cls, settings, q):

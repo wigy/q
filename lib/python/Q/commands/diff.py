@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 from ..error import QError
-from ..settings import QSettings
 from ..command import AutoGoCommand
 from ..helper import Git
 
@@ -21,7 +20,7 @@ class CommandDiff(AutoGoCommand):
         self.Q('my','revert')
         if self.args and (self.args[0] == 'all'):
             merge_base = self.ticket.merge_base()
-            Git()('diff --color '+merge_base)
+            Git(self.settings)('diff --color '+merge_base)
         else:
-            Git()('diff --color')
+            Git(self.settings)('diff --color')
         self.Q('my','apply')

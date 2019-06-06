@@ -2,7 +2,6 @@
 import time
 
 from ..error import QError
-from ..settings import QSettings
 from ..command import Command
 from ..helper import Git
 
@@ -51,8 +50,8 @@ class CommandStart(Command):
             self.ticket['Branch'] = branch
         else:
             self.ticket['Branch'] = self.ticket.branch_name()
-            Git()('branch '+self.ticket['Branch'] + ' ' + QSettings.BASE_BRANCH)
-            Git()('push -u ' + QSettings.GIT_REMOTE + ' '+self.ticket['Branch'])
+            Git(self.settings)('branch '+self.ticket['Branch'] + ' ' + self.settings.BASE_BRANCH)
+            Git(self.settings)('push -u ' + self.settings.GIT_REMOTE + ' '+self.ticket['Branch'])
 
         # Set the base branch.
         base = self.opts.get('base', None)
@@ -60,7 +59,7 @@ class CommandStart(Command):
             self.ticket['Base'] = base
 
         # Mark it started and save.
-        self.ticket['Owner'] = QSettings.TICKETING_USER
+        self.ticket['Owner'] = self.settings.TICKETING_USER
         self.ticket['Started'] = time.strftime('%Y-%m-%d %H:%M')
         self.ticket.set_status('Started')
         self.ticket.save()
@@ -69,7 +68,7 @@ class CommandStart(Command):
         self.app.start_work_on_ticket(self.ticket)
 
         # Go to the branch.
-        Git()('checkout '+self.ticket.branch_name())
+        Git(self.settings)('checkout '+self.ticket.branch_name())
 
         # Start working.
         self.Q('work', 'switch')

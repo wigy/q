@@ -130,7 +130,7 @@ class Command:
         """
         Resolve the code of the current branch if any.
         """
-        branch = Git().current_branch_name(ignore_error=ignore_error)
+        branch = Git(self.settings).current_branch_name(ignore_error=ignore_error)
         if branch == self.settings.LOBBY_BRANCH:
             return 0
         num = None
@@ -148,6 +148,12 @@ class Command:
         old_cmd=self.app.cmd
         self.app.q.parse(*args)
         self.app.cmd=old_cmd
+
+    def get_ticket(self, code):
+        """
+        Load a ticket from this project.
+        """
+        return self.app.load_ticket(code)
 
     @staticmethod
     def find(cmd):
@@ -242,7 +248,7 @@ class AutoGoCommand(AutoLoadCommand):
         if old:
             self.ticket.leave()
         if code == '0':
-            Git()('checkout ' + self.settings.LOBBY_BRANCH)
+            Git(self.settings)('checkout ' + self.settings.LOBBY_BRANCH)
             return
         self.load(code)
         self.ticket.enter()

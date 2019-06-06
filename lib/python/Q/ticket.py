@@ -70,9 +70,11 @@ class Ticket:
     def __init__(self, app, code=None):
         from .command import Command
         if isinstance(app, Command):
-            raise Exception('Ticket constructor myst be called with Project instance.')
+            raise Exception('Ticket constructor must be called with Project instance.')
         self.app = app
         self.settings = app.settings
+        if code and not re.match(self.settings.TICKET_NUMBER_REGEX, code):
+            raise QError('Invalid ticket number %s.' % code)
         self.root_path = self.settings.WORKDIR
         self.code = code
         self.data = {}
@@ -483,17 +485,18 @@ class Ticket:
             return
 
         save = False
+        cache = QCache(self.settings)
 
         if self['Build ID'] and self['Build Result'] not in ['Success', 'Fail']:
             check = lambda : self.app.build_status(self)
-            state = QCache.get('Build ' + str(self['Build ID']), check)
+            state = cache.get('Build ' + str(self['Build ID']), check)
             if state and self['Build Result'] != state:
                 self['Build Result'] = state
                 save = True
 
         if self['Review ID'] and self['Review Result'] not in ['Success', 'Fail']:
             check = lambda : self.app.review_status(self['Review ID'])
-            state = QCache.get('Review ' + str(self['Review ID']), check)
+            state = cache.get('Review ' + str(self['Review ID']), check)
             if state and self['Review Result'] != state:
                 self['Review Result'] = state
                 save = True

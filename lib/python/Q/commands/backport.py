@@ -2,14 +2,13 @@
 import os
 
 from ..error import QError
-from ..settings import QSettings
 from ..command import AutoLoadCommand
 from ..helper import Git, Cp, Rm
 
 
 class CommandBackport(AutoLoadCommand):
     """
-    Copy a file(s) to the base branch from the current branch. 
+    Copy a file(s) to the base branch from the current branch.
     """
     def run(self):
         """
@@ -21,11 +20,11 @@ class CommandBackport(AutoLoadCommand):
         for src in self.args:
             if not os.path.exists(src):
                 raise QError("Cannot find file '%s'.", src)
-            Git()('checkout', mine)
+            Git(self.settings)('checkout', mine)
             saved = TMP + os.path.split(src)[1]
-            Cp()(src, saved) 
-            Git()('checkout', base)
+            Cp()(src, saved)
+            Git(self.settings)('checkout', base)
             Cp()(saved, src)
             Rm()(saved)
-            Git()('add', src)
-            Git()('commit', '-m', '"Back-ported from ' + mine + '"')
+            Git(self.settings)('add', src)
+            Git(self.settings)('commit', '-m', '"Back-ported from ' + mine + '"')

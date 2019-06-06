@@ -11,7 +11,7 @@ import requests
 import json
 
 from .error import QError
-from .helper import Curl, Grunt
+from .helper import Curl
 
 
 class BuildMixin:

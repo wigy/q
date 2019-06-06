@@ -2,7 +2,6 @@
 import time
 
 from ..error import QError
-from ..settings import QSettings
 from ..command import AutoGoCommand
 from ..helper import Git
 
@@ -84,7 +83,7 @@ class CommandBuild(AutoGoCommand):
         from ..q import Q
         if self.app.build_needs_publish():
             self.Q('publish')
-        cid = Git().latest_commit()
+        cid = Git(self.settings).latest_commit()
         bid = self.app.build_start(self.ticket, cid)
         if bid is None:
             raise QError("Launching the build failed.")

@@ -3,7 +3,6 @@ import os
 
 from ..error import QError
 from ..command import AutoLoadCommand
-from ..settings import QSettings
 from ..helper import Git
 
 
@@ -39,8 +38,8 @@ class CommandEpic(AutoLoadCommand):
         if changed:
           if old_branch != new_branch:
             # TODO: This could be generic function somewhere automatically updating all branch references in all tickets
-            Git()('branch', '-M', old_branch, new_branch)
-            Git()('push', '-u', QSettings.GIT_REMOTE, new_branch)
-            Git()('push', QSettings.GIT_REMOTE, ':' + old_branch)
+            Git(self.settings)('branch', '-M', old_branch, new_branch)
+            Git(self.settings)('push', '-u', self.settings.GIT_REMOTE, new_branch)
+            Git(self.settings)('push', self.settings.GIT_REMOTE, ':' + old_branch)
           self.ticket['Branch'] = new_branch
           self.ticket.save()

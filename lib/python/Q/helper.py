@@ -81,7 +81,7 @@ class Curl(QHelper):
         import cStringIO
         import urllib
         buf = cStringIO.StringIO()
-        c = pycurl.Curl()
+        c = pycurl.Curl(self.settings)
         c.setopt(c.URL, url)
         c.setopt(c.WRITEFUNCTION, buf.write)
         method = 'GET'
@@ -417,15 +417,3 @@ class Nose(SystemCall):
         else:
             cmd = 'nosetests'
         return super(Nose,self).run(*args, command="DJANGO_SETTINGS_MODULE=test_settings " + cmd)
-
-
-class Grunt(SystemCall):
-    """
-    Helper to launch grunt jobs.
-    """
-    command = 'grunt'
-
-    def run(self, *args, **kwargs):
-        if self.settings.GRUNT_DIR is None:
-            raise QError("Cannot us Grunt unless GRUNT_DIR has been specified.")
-        return super(Grunt,self).run(*args, chdir=os.path.join(self.settings.APPDIR, self.settings.GRUNT_DIR))

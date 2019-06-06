@@ -63,12 +63,12 @@ class ReleasingByMerge(ReleasingMixin):
         if not self.settings.RELEASE_BRANCH:
             raise QError("Must set RELEASE_BRANCH in order to use ReleasingByMerge.")
         self.Q('my','revert')
-        Git()('checkout "'+ self.settings.RELEASE_BRANCH + '"')
-        Git()('pull')
-        Git()('merge "'+ ticket.branch_name() + '"')
+        Git(self.settings)('checkout "'+ self.settings.RELEASE_BRANCH + '"')
+        Git(self.settings)('pull')
+        Git(self.settings)('merge "'+ ticket.branch_name() + '"')
         self.Q('my','apply')
-        Git()('push "' + self.settings.GIT_REMOTE + '" "' + self.settings.RELEASE_BRANCH + '"')
-        Git()('checkout "'+ ticket.branch_name() + '"')
+        Git(self.settings)('push "' + self.settings.GIT_REMOTE + '" "' + self.settings.RELEASE_BRANCH + '"')
+        Git(self.settings)('checkout "'+ ticket.branch_name() + '"')
         self.Q('done')
-        Git()('checkout "'+ self.settings.RELEASE_BRANCH + '"')
+        Git(self.settings)('checkout "'+ self.settings.RELEASE_BRANCH + '"')
         return True

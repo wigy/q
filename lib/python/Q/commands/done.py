@@ -2,7 +2,6 @@
 import time
 
 from ..error import QError
-from ..settings import QSettings
 from ..command import AutoGoCommand
 from ..ticket import Ticket
 
@@ -32,7 +31,7 @@ class CommandDone(AutoGoCommand):
             if ticket['Base'] == self.ticket['Branch'] and ticket['Status'] != 'Done':
                 new_base = self.ticket['Base']
                 if not new_base:
-                    new_base = QSettings.BASE_BRANCH
+                    new_base = self.ettings.BASE_BRANCH
                 ticket['Base'] = new_base
                 ticket.save()
 
@@ -41,9 +40,8 @@ class CommandDone(AutoGoCommand):
         if self.app.timing_is_in_use():
             if self.ticket.work_timing_is_on():
                 self.Q('work','off')
-            self.Q('work','push')
             log = self.ticket.work_timing()
             if len(log) > 1 and log[-2].can_merge(log[-1]):
                 self.Q('work','merge')
-                self.Q('work','push') # TODO: Needed since merge still can crash. Fix it.
+            self.Q('work','push', self.ticket.code)
         self.ticket.save()

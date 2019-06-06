@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
 
 from ..error import QError
-from ..settings import QSettings
 from ..command import AutoLoadCommand
 from ..file import QFile
 from ..helper import Edit
@@ -20,7 +19,7 @@ class CommandEdit(AutoLoadCommand):
             notes = ""
         path = self.ticket.path('notes.txt')
         QFile(path).write(notes + "\n")
-        Edit()(path, light=True)
+        Edit(self.settings)(path, light=True)
         new_notes = QFile(path).read().strip()
         if new_notes != notes:
             self.ticket['Notes'] = new_notes

@@ -2,7 +2,6 @@
 import datetime
 
 from ..error import QError
-from ..settings import QSettings
 from ..command import Command
 
 
@@ -23,11 +22,11 @@ class CommandOffline(Command):
             val = False
           else:
             raise QError('Invalid argument ' + repr(self.args[0]))
-          QSettings.OFFLINE_MODE = val
+          self.settings.OFFLINE_MODE = val
           self.Q('settings', 'save')
 
-        self.wr(Q.TITLE + "\nOffline mode: " + Q.VAR + str(QSettings.OFFLINE_MODE) + Q.END + "\n")
-        if QSettings.OFFLINE_MODE:
+        self.wr(Q.TITLE + "\nOffline mode: " + Q.VAR + str(self.settings.OFFLINE_MODE) + Q.END + "\n")
+        if self.settings.OFFLINE_MODE:
           self.wr('Use ' + Q.COMMAND + 'q offline off' + Q.END + ' to turn it off.\n')
         else:
           self.wr('Use ' + Q.COMMAND + 'q offline on' + Q.END + ' to turn it on.\n')

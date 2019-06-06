@@ -3,7 +3,6 @@ import time
 import re
 
 from ..error import QError
-from ..settings import QSettings
 from ..command import Command
 from ..helper import Grep
 from ..ticket import Ticket
@@ -23,13 +22,13 @@ class CommandFind(Command):
         if args == "":
             raise QError("Need arguments to search.")
         args = '"' + args.replace('"', '\\"') + '"'
-        out = Grep().run("-r", "-l", "-i", args, QSettings.WORKDIR, get_output=True)
+        out = Grep().run("-r", "-l", "-i", args, self.settings.WORKDIR, get_output=True)
         hits = {}
         codes = self.app.all_codes()
         for filename in out.split("\n"):
             if filename == '' or filename[-1] == '~':
                 continue
-            ticket = filename[len(QSettings.WORKDIR) + 1:]
+            ticket = filename[len(self.settings.WORKDIR) + 1:]
             ticket = ticket[0:ticket.find('/')]
             if not ticket in codes:
                 continue

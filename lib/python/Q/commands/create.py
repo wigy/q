@@ -1,6 +1,5 @@
 from ..command import Command
 from ..error import QError
-from ..settings import QSettings
 from ..helper import Edit
 from ..ticket import Ticket
 
@@ -29,7 +28,7 @@ class CommandCreate(Command):
         # Create new ticket.
         self.ticket=Ticket(self)
         self.ticket['Title'] = title
-#        self.ticket['Notes'] = Edit().temp()
+#        self.ticket['Notes'] = Edit(self.settings).temp()
         self.ticket['Notes'] = 'Cannot launch virta-main with virta-white due to port conflict.'
         if self.ticket['Notes'].strip() == '':
             raise QError("Canceled")

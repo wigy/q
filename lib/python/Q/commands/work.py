@@ -1,7 +1,8 @@
 # -*- coding: UTF-8 -*-
+import re
+
 from time import localtime, strftime
 from ..error import QError
-from ..settings import QSettings
 from ..command import AutoLoadCommand
 from datetime import datetime
 from datetime import timedelta
@@ -132,8 +133,14 @@ class CommandWork(AutoLoadCommand):
         date = strftime('%Y-%m-%d', localtime())
         log = self.app.timing_get_full_list(date = date)
         codes = set()
-        for w in log:
-            codes.add(w.code)
+        if len(self.args) > 1:
+            code = self.args[1]
+            if not re.match(self.settings.TICKET_NUMBER_REGEX, code):
+                code = self.app.num2code(code)
+            codes.add(code)
+        else:
+            for w in log:
+                codes.add(w.code)
         for code in codes:
             ticket=self.app.load_ticket(code)
             self.app.timing_push_ticket(ticket)

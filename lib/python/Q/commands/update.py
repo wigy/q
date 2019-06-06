@@ -16,23 +16,23 @@ class CommandUpdate(AutoGoCommand):
         base = self.ticket.base_branch()
         from ..q import Q
         self.Q('my','revert')
-        if Git().has_changes():
+        if Git(self.settings).has_changes():
             raise QError("Need to commit changes first.")
-        old = Git().current_branch_name()
+        old = Git(self.settings).current_branch_name()
         base = self.ticket.base_branch()
         if not self.opts.get('local'):
             if base == self.settings.BASE_BRANCH:
-                Git()('pull')
+                Git(self.settings)('pull')
             else:
-                Git()('fetch -a')
+                Git(self.settings)('fetch -a')
         if base != self.settings.BASE_BRANCH and self.opts.get('all'):
             g = re.match(self.settings.TICKET_BRANCH_REGEX, base)
             self.Q('update', g.group(1),'--all','--local')
         if old != base:
-            Git()('checkout '+old)
+            Git(self.settings)('checkout '+old)
             if base == self.settings.BASE_BRANCH:
                 to_merge = self.settings.GIT_REMOTE +'/' + self.settings.BASE_BRANCH
             else:
                 to_merge = base
-            Git()('merge --no-edit '+to_merge)
+            Git(self.settings)('merge --no-edit '+to_merge)
         self.Q('my','apply')

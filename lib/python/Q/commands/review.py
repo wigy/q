@@ -2,7 +2,6 @@
 import time
 
 from ..error import QError
-from ..settings import QSettings
 from ..command import AutoGoCommand
 from ..helper import Git
 
@@ -81,7 +80,7 @@ class CommandReview(AutoGoCommand):
         from ..q import Q
         if not self.ticket['Review ID'] is None:
             raise QError("Ticket has already review %r pending.", self.ticket['Review ID'])
-        if not self.opts.get('force') and QSettings.REVIEW_NEEDS_BUILD and self.ticket['Build ID'] is None:
+        if not self.opts.get('force') and self.settings.REVIEW_NEEDS_BUILD and self.ticket['Build ID'] is None:
             raise QError("Cannot create review before you have build on-going.")
         if self.app.review_is_auto():
             file = self._make_diff()
@@ -110,7 +109,7 @@ class CommandReview(AutoGoCommand):
         merge_base = self.ticket.merge_base()
         version = self.ticket.reviews() + 1
         file = self.ticket.path("review-"+str(version)+".diff")
-        Git()('diff '+merge_base+" > "+file)
+        Git(self.settings)('diff '+merge_base+" > "+file)
         return file
 
     def run_update(self):
