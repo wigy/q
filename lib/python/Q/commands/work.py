@@ -98,6 +98,10 @@ class CommandWork(AutoLoadCommand):
         """
         Turn work timer off.
         """
+        if not self.ticket.code:
+            work = self.app.timing_get_the_latest()
+            self.wr('Note: no ticket loaded, using the latest one worked on.')
+            self.load(work.code)
         work = self.ticket.work_timing()
         self.app.timing_off_for_ticket(self.ticket, time)
         self.run_show(today=True)
@@ -150,6 +154,9 @@ class CommandWork(AutoLoadCommand):
         Switch timing on/off or switch to another branch.
         """
         work = self.app.timing_get_the_latest()
+        if not self.ticket.code:
+            self.wr('Note: no ticket loaded, using the latest one worked on.')
+            self.load(work.code)
         time = work.now()
         if work.is_running():
             if work.is_today():
@@ -183,6 +190,9 @@ class CommandWork(AutoLoadCommand):
         work = self.app.timing_get_the_latest()
         if work is None:
             raise QError('No work timing entries.')
+        if not self.ticket.code:
+            self.wr('Note: no ticket loaded, using the latest one worked on.')
+            self.load(work.code)
         comment = ' '.join(self.args[1:])
         if not len(comment):
             raise QError('Empty comment.')
