@@ -522,7 +522,7 @@ class Ticket:
                 save = True
 
         if self['Status'] == 'Ready':
-            if self.app.release_can_be_skipped(self):
+            if self.app.release_can_be_skipped(self) and not self.app.timing_is_in_use():
                 self.set_status('Done')
                 save = True
 
