@@ -16,5 +16,7 @@ class CommandPublish(AutoGoCommand):
             self.Q('commit')
         if self.opts.get('all'):
             Git(self.settings)('push')
+        elif not self.ticket.code:
+            Git(self.settings)('push', self.settings.GIT_REMOTE, self.settings.LOBBY_BRANCH)
         else:
             Git(self.settings)('push ' + self.settings.GIT_REMOTE + ' '+self.ticket.branch_name())
