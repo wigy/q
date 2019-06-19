@@ -123,6 +123,8 @@ class Command:
         """
         Load the ticket with the given code.
         """
+        from q import Q
+        self.app = self.app.q.find_project(code)
         self.ticket = Ticket(self.app, code)
         self.ticket.load()
 

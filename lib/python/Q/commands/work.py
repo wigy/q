@@ -146,8 +146,8 @@ class CommandWork(AutoLoadCommand):
             for w in log:
                 codes.add(w.code)
         for code in codes:
-            ticket=self.app.load_ticket(code)
-            self.app.timing_push_ticket(ticket)
+            self.load(code)
+            self.app.timing_push_ticket(self.ticket)
 
     def run_switch(self):
         """

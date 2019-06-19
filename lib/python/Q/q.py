@@ -69,6 +69,14 @@ class Q:
                     project = QProject.create(settings, self)
                     Q.projects.append(project)
 
+    def find_project(self, code):
+        """
+        Find the project handling the given ticket code.
+        """
+        for project in self.projects:
+            if re.match(project.settings.TICKET_NUMBER_REGEX, code):
+                return project
+
     @staticmethod
     def wr(channel, *msg):
         """
