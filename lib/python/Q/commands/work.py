@@ -190,10 +190,9 @@ class CommandWork(AutoLoadCommand):
         work = self.app.timing_get_the_latest()
         if work is None:
             raise QError('No work timing entries.')
-        if not self.ticket.code:
-            self.wr('Note: no ticket loaded, using the latest one worked on.')
-            self.load(work.code)
         comment = ' '.join(self.args[1:])
         if not len(comment):
             raise QError('Empty comment.')
+        if work.code != self.ticket.code:
+            self.load(work.code)
         self.app.timing_comment_for_ticket(self.ticket, comment)
