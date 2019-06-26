@@ -31,7 +31,7 @@ class CommandDone(AutoGoCommand):
             if ticket['Base'] == self.ticket['Branch'] and ticket['Status'] != 'Done':
                 new_base = self.ticket['Base']
                 if not new_base:
-                    new_base = self.ettings.BASE_BRANCH
+                    new_base = self.settings.BASE_BRANCH
                 ticket['Base'] = new_base
                 ticket.save()
 
