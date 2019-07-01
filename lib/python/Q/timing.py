@@ -227,9 +227,6 @@ class TimingMixin:
         """
         Append the comment for the latest work entry.
         """
-        work = self.timing_get_the_latest()
-        if ticket.code != work.code:
-            raise QError('Cannot comment ticket ' + ticket.code + ' work log that is not the latest work ' + work.code + '.')
         ticket.work_timing_comment(comment)
         ticket.save()
 

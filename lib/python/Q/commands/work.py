@@ -98,12 +98,10 @@ class CommandWork(AutoLoadCommand):
         """
         Turn work timer off.
         """
-        if not self.ticket.code:
-            work = self.app.timing_get_the_latest()
-            self.wr('Note: no ticket loaded, using the latest one worked on.')
-            self.load(work.code)
-        work = self.ticket.work_timing()
-        self.app.timing_off_for_ticket(self.ticket, time)
+        work = self.app.timing_get_the_latest()
+        app = self.app.q.find_project(work.code)
+        ticket = app.load_ticket(work.code)
+        app.timing_off_for_ticket(ticket, time)
         self.run_show(today=True)
 
     def run_merge(self):
@@ -193,6 +191,6 @@ class CommandWork(AutoLoadCommand):
         comment = ' '.join(self.args[1:])
         if not len(comment):
             raise QError('Empty comment.')
-        if work.code != self.ticket.code:
-            self.load(work.code)
-        self.app.timing_comment_for_ticket(self.ticket, comment)
+        app = self.app.q.find_project(work.code)
+        ticket = app.load_ticket(work.code)
+        app.timing_comment_for_ticket(ticket, comment)
