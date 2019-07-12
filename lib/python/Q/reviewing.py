@@ -429,7 +429,7 @@ class ReviewByBitbucket(ReviewMixin):
         if data['type'] == 'error':
             raise QError('Error: %r', data)
         diff = data['links']['diff']['href']
-        return int(re.match('.*/pullrequests/(.*)/diff', diff).groups()[0])
+        return int(re.match('from_pullrequest_id=(\d+)', diff).groups()[0])
 
     def _review_auth(self):
         if not self.settings.BITBUCKET_USER:

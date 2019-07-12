@@ -132,15 +132,20 @@ class CommandWork(AutoLoadCommand):
         """
         Push work logs.
         """
-        date = strftime('%Y-%m-%d', localtime())
-        log = self.app.timing_get_full_list(date = date)
         codes = set()
         if len(self.args) > 1:
             code = self.args[1]
-            if not re.match(self.settings.TICKET_NUMBER_REGEX, code):
-                code = self.app.num2code(code)
-            codes.add(code)
+            if (re.match(r'^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$', code)):
+                log = self.app.timing_get_full_list(date = code)
+                for w in log:
+                    codes.add(w.code)
+            else:
+                if not re.match(self.settings.TICKET_NUMBER_REGEX, code):
+                    code = self.app.num2code(code)
+                codes.add(code)
         else:
+            date = strftime('%Y-%m-%d', localtime())
+            log = self.app.timing_get_full_list(date = date)
             for w in log:
                 codes.add(w.code)
         for code in codes:
