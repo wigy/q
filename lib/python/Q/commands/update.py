@@ -2,6 +2,7 @@
 from ..error import QError
 from ..command import AutoGoCommand
 from ..helper import Git
+import re
 
 class CommandUpdate(AutoGoCommand):
     """
