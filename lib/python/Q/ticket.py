@@ -369,6 +369,12 @@ class Ticket:
             ret.append(e)
         return ret
 
+    def set_work_timing(self, entries):
+        """
+        Read work timing from entries and set to the ticket.
+        """
+        self['Work'] = '\n'.join(map(lambda x: x.to_ticket(), entries))
+
     def work_timing_merge(self):
         """
         Merge last two work timing entries.
@@ -376,7 +382,7 @@ class Ticket:
         work = self.work_timing()
         work[-2].merge(work[-1])
         work.pop()
-        self['Work'] = '\n'.join(map(lambda x: x.to_ticket(), work))
+        self.set_work_timing(work)
 
     def work_timing_drop(self):
         """
@@ -384,7 +390,7 @@ class Ticket:
         """
         work = self.work_timing()
         work.pop()
-        self['Work'] = '\n'.join(map(lambda x: x.to_ticket(), work))
+        self.set_work_timing(work)
 
     def work_timing_is_on(self):
         """

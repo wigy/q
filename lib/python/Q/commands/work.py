@@ -15,13 +15,14 @@ class CommandWork(AutoLoadCommand):
                      'c' : 'comment',
                      'd' : 'drop',
                      'm' : 'merge',
+                     'r' : 'reopen',
                      's' : 'switch',
                      'p' : 'push'
                     }
 
     def run(self):
         """
-        usage: q work [--today|on [<time>]|off [<time>]|push|switch|merge|comment|drop]
+        usage: q work [--today|on [<time>]|off [<time>]|push|switch|merge|comment|drop|reopen]
         """
         if not self.app.timing_is_in_use():
             return
@@ -47,6 +48,8 @@ class CommandWork(AutoLoadCommand):
                 self.run_comment()
             elif self.args[0] == 'drop':
                 self.run_drop()
+            elif self.args[0] == 'reopen':
+                self.run_reopen()
             else:
                 raise QError('Invalid argument.')
 
@@ -199,3 +202,20 @@ class CommandWork(AutoLoadCommand):
         app = self.app.q.find_project(work.code)
         ticket = app.load_ticket(work.code)
         app.timing_comment_for_ticket(ticket, comment)
+
+    def run_reopen(self):
+        """
+        Wipe end time of the previous entry.
+        """
+        work = self.app.timing_get_the_latest()
+        if work is None:
+            raise QError('No work timing entries.')
+        app = self.app.q.find_project(work.code)
+        ticket = app.load_ticket(work.code)
+        entries = ticket.work_timing()
+        if entries[-1].stop is None:
+            raise QError('Ticket has no stop time.')
+        entries[-1].stop = None
+        ticket.set_work_timing(entries)
+        ticket.save()
+        self.run_show(today=True)
