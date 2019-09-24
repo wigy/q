@@ -213,8 +213,8 @@ class Ticket:
         """
         Create new ticket.
         """
-        self.wr("Created ticket in '%s'.",self.path())
         self.mkdir(self.path())
+        self.wr("Created ticket in '%s'.",self.path())
 
     def destroy(self):
         """
