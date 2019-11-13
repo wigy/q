@@ -246,16 +246,43 @@ class TimingByAtlassian(TimingMixin):
     """
     Implementation using Atlassian worklog (requires also TicketingByAtlassian).
     """
+    def __remove_atlassian_worklog(self, ticket):
+        resp = Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/3/issue/' + ticket.code + '/worklog', auth=self._ticketing_auth())
+        for work in resp.json()['worklogs']:
+            Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/3/issue/' + ticket.code + '/worklog/' + work['id'], delete=True, auth=self._ticketing_auth())
+
 
     def timing_push_ticket(self, ticket):
+        # self.__remove_atlassian_worklog(ticket)
         resp = Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/3/issue/' + ticket.code + '/worklog', auth=self._ticketing_auth())
+        # Find existing.
         existing = set()
+        ids = {}
+        spent = {}
         for work in resp.json()['worklogs']:
-            name = work['started'][0:16] + '/' + str(int(work['timeSpentSeconds']))
-            existing.add(name)
+            if work['author']['emailAddress'] == self.settings.TICKETING_USER:
+                time = work['started'][0:16]
+                workSpent = int(work['timeSpentSeconds'])
+                name = time + '/' + str(workSpent)
+                ids[time] = work['id']
+                spent[time] = workSpent
+                existing.add(time)
+                existing.add(name)
+
+        # Remove overlapping starting time entries.
         for work in ticket.work_timing():
             if work.stop:
-                name = work.get_start_stamp()[0:16] + '/' + str(int(work.seconds()))
+                time = work.get_start_stamp()[0:16]
+                name = time + '/' + str(int(work.seconds()))
+                if not name in existing and time in existing:
+                    ticket.wr('Deleting worklog at %s for %d minutes' % (work.get_start_stamp()[0:16], spent[time] / 60))
+                    Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/3/issue/' + ticket.code + '/worklog/' + ids[time], delete=True, auth=self._ticketing_auth())
+
+        # Write new or changed entries.
+        for work in ticket.work_timing():
+            if work.stop:
+                time = work.get_start_stamp()[0:16]
+                name = time + '/' + str(int(work.seconds()))
                 if not name in existing:
                     data = {"timeSpentSeconds": work.seconds(), "started": work.get_start_stamp()}
                     ticket.wr('Recording worklog at %s for %d minutes' % (work.get_start_stamp()[0:16], work.minutes()))
