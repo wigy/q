@@ -247,29 +247,30 @@ class TimingByAtlassian(TimingMixin):
     Implementation using Atlassian worklog (requires also TicketingByAtlassian).
     """
 
-    def __remove_atlassian_worklog(self, ticket):
-        resp = Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/3/issue/' + ticket.code + '/worklog', auth=self._ticketing_auth())
-        for work in resp.json()['worklogs']:
-            Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/3/issue/' + ticket.code + '/worklog/' + work['id'], delete=True, auth=self._ticketing_auth())
-
     def timing_push_ticket(self, ticket):
-        self.__remove_atlassian_worklog(ticket)
+        resp = Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/3/issue/' + ticket.code + '/worklog', auth=self._ticketing_auth())
+        existing = set()
+        for work in resp.json()['worklogs']:
+            name = work['started'][0:16] + '/' + str(int(work['timeSpentSeconds']))
+            existing.add(name)
         for work in ticket.work_timing():
-            data = {"timeSpentSeconds": work.seconds(), "started": work.get_start_stamp()}
-            ticket.wr('Recording worklog for %d minutes' % work.minutes())
-            if work.text is not None:
-                data["comment"] = {
-                    "type": "doc",
-                    "version": 1,
-                    "content": [{
-                        "type": "paragraph",
-                        "content": [
-                            {
-                                "text": work.text,
-                                "type": "text"
-                            }
-                        ]
-                    }]
-                }
-
-            resp = Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/3/issue/' + work.code + '/worklog', post=data, auth=self._ticketing_auth())
+            if work.stop:
+                name = work.get_start_stamp()[0:16] + '/' + str(int(work.seconds()))
+                if not name in existing:
+                    data = {"timeSpentSeconds": work.seconds(), "started": work.get_start_stamp()}
+                    ticket.wr('Recording worklog at %s for %d minutes' % (work.get_start_stamp()[0:16], work.minutes()))
+                    if work.text is not None:
+                        data["comment"] = {
+                            "type": "doc",
+                            "version": 1,
+                            "content": [{
+                                "type": "paragraph",
+                                "content": [
+                                    {
+                                        "text": work.text,
+                                        "type": "text"
+                                    }
+                                ]
+                            }]
+                        }
+                    resp = Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/3/issue/' + work.code + '/worklog', post=data, auth=self._ticketing_auth())
