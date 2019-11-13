@@ -275,7 +275,7 @@ class TimingByAtlassian(TimingMixin):
                 time = work.get_start_stamp()[0:16]
                 name = time + '/' + str(int(work.seconds()))
                 if not name in existing and time in existing:
-                    ticket.wr('Deleting worklog at %s for %d minutes' % (work.get_start_stamp()[0:16], spent[time] / 60))
+                    ticket.wr('Deleting worklog of %s at %s for %d minutes' % (work.code, work.get_start_stamp()[0:16], spent[time] / 60))
                     Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/3/issue/' + ticket.code + '/worklog/' + ids[time], delete=True, auth=self._ticketing_auth())
 
         # Write new or changed entries.
@@ -285,7 +285,7 @@ class TimingByAtlassian(TimingMixin):
                 name = time + '/' + str(int(work.seconds()))
                 if not name in existing:
                     data = {"timeSpentSeconds": work.seconds(), "started": work.get_start_stamp()}
-                    ticket.wr('Recording worklog at %s for %d minutes' % (work.get_start_stamp()[0:16], work.minutes()))
+                    ticket.wr('Recording worklog %s at %s for %d minutes' % (work.code, work.get_start_stamp()[0:16], work.minutes()))
                     if work.text is not None:
                         data["comment"] = {
                             "type": "doc",
