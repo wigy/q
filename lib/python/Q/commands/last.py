@@ -24,6 +24,8 @@ class CommandLast(Command):
         results = {}
         for code in self.app.all_codes():
             self.load(code)
+            if self.ticket['Finished'] is None:
+                continue
             started = self.ticket['Started'][0:10]
             finished = None
             if self.ticket['Status'] == 'Done':
