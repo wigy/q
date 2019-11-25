@@ -259,31 +259,24 @@ class TimingByAtlassian(TimingMixin):
         existing = set()
         ids = {}
         spent = {}
-        text = {}
         for work in resp.json()['worklogs']:
             if work['author']['emailAddress'] == self.settings.TICKETING_USER:
                 time = work['started'][0:16]
                 workSpent = int(work['timeSpentSeconds'])
                 name = time + '/' + str(workSpent)
-                ids[name] = work['id']
-                spent[name] = workSpent
-                if 'comment' in work and 'content' in work['comment'] and len(work['comment']['content']) == 1 and 'content' in work['comment']['content'][0] and len(work['comment']['content'][0]['content']) == 1 and 'text' in work['comment']['content'][0]['content'][0]:
-                    text[name] = work['comment']['content'][0]['content'][0]['text']
-                else:
-                    text[name] = None
+                ids[time] = work['id']
+                spent[time] = workSpent
                 existing.add(time)
                 existing.add(name)
 
-        # Remove overlapping starting time entries with same text.
+        # Remove overlapping starting time entries.
         for work in ticket.work_timing():
             if work.stop:
                 time = work.get_start_stamp()[0:16]
                 name = time + '/' + str(int(work.seconds()))
-                if (not name in existing and time in existing) or work.text != text[name]:
-                    ticket.wr('Deleting worklog of %s at %s for %d minutes' % (work.code, work.get_start_stamp()[0:16], spent[name] / 60))
-                    Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/3/issue/' + ticket.code + '/worklog/' + ids[name], delete=True, auth=self._ticketing_auth())
-                    existing.remove(time)
-                    existing.remove(name)
+                if not name in existing and time in existing:
+                    ticket.wr('Deleting worklog of %s at %s for %d minutes' % (work.code, work.get_start_stamp()[0:16], spent[time] / 60))
+                    Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/3/issue/' + ticket.code + '/worklog/' + ids[time], delete=True, auth=self._ticketing_auth())
 
         # Write new or changed entries.
         for work in ticket.work_timing():
