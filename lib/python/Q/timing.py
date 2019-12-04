@@ -260,7 +260,7 @@ class TimingByAtlassian(TimingMixin):
         ids = {}
         spent = {}
         for work in resp.json()['worklogs']:
-            if work['author']['emailAddress'] == self.settings.TICKETING_USER:
+            if 'emailAddress' in work['author'] and  work['author']['emailAddress'] == self.settings.TICKETING_USER:
                 time = work['started'][0:16]
                 workSpent = int(work['timeSpentSeconds'])
                 name = time + '/' + str(workSpent)
