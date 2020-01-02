@@ -2,6 +2,7 @@ import sys
 import os
 import re
 import glob
+from distutils.dir_util import mkpath
 
 from .error import QError
 from .building import NoBuild, BuildByBamboo
