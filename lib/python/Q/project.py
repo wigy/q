@@ -5,7 +5,7 @@ import glob
 from distutils.dir_util import mkpath
 
 from .error import QError
-from .building import NoBuild, BuildByBamboo
+from .building import NoBuild, BuildByBamboo, BuildByCommandLine
 from .reviewing import ReviewByReviewBoard, ReviewByGerrit, ReviewByVSTS, ReviewByBitbucket, NoReview, ReviewByLocalDiff
 from .testing import TestingByNose, TestingByShellCommands
 from .database import DatabaseByDjango

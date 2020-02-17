@@ -11,7 +11,7 @@ import requests
 import json
 
 from .error import QError
-from .helper import Curl
+from .helper import Curl, SystemCall
 
 
 class BuildMixin:
@@ -102,9 +102,9 @@ class BuildByBamboo(BuildMixin):
             try:
                 resp = requests.get(url, auth=self._build_auth(), verify=False)
                 data = resp.json()
-            except Exception, e:
-                print resp
-                print e
+            except Exception as e:
+                print (resp)
+                print (e)
                 raise QError('Getting status failed.')
             state = data['state']
             if state == 'Successful':
@@ -138,3 +138,22 @@ class BuildByBamboo(BuildMixin):
         if not self.settings.BAMBOO_PASSWORD:
             raise QError("Password for Bamboo BAMBOO_PASSWORD is not set.")
         return (self.settings.BAMBOO_USER, self.settings.BAMBOO_PASSWORD)
+
+class BuildByCommandLine(BuildMixin):
+
+    def build_needs_publish(self):
+        return False
+
+    def build_start(self, ticket, gitid):
+        if not self.settings.BUILD_COMMAND:
+            raise QError("Must define BUILD_COMMAND to build.")
+        class ShellBuild(SystemCall):
+            command=None
+
+        ShellBuild()(command=self.settings.BUILD_COMMAND)
+        return 'OK'
+
+    def build_status(self, ticket):
+        if ticket['Build ID'] == 'OK':
+            return 'Success'
+        return 'Fail'

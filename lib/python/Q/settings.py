@@ -60,6 +60,8 @@ class QSettings:
         self.BITBUCKET_PR_TARGET = 'master'
         # New branch name patterb. %c ticket code, %u user, %t title in lower case underscored
         self.BRANCH_NAMING = '%c_%u_%t'
+        # Command for local command line building.
+        self.BUILD_COMMAND = None
         # How long ticket build and review statuses are cached until refetched.
         self.CACHING_TIME_MIN = 5
         # Format of the commit message: %c ticket code, %m message
