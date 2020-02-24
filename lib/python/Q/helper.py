@@ -127,7 +127,7 @@ class Requests(QHelper):
     """
     Newer HTTP helper version using `requests`.
     """
-    def run(self, url, post=None, put=None, delete=None, patch=None, upload=None, quiet=False, user=None, password=None, auth=None):
+    def run(self, url, get=None, post=None, put=None, delete=None, patch=None, upload=None, quiet=False, user=None, password=None, auth=None):
         from q import Q
         if self.settings.OFFLINE_MODE == 'yes':
             self.wr("Skipping in offline-mode: "+Q.URL + url + Q.END)
@@ -136,6 +136,7 @@ class Requests(QHelper):
             auth = (user, password)
         method = requests.get
         json = None
+        params = None
         if post:
             method = requests.post
             json = post
@@ -145,9 +146,12 @@ class Requests(QHelper):
         elif patch:
             method = requests.patch
             json = patch
+        elif get:
+            method = requests.get
+            params = get
         elif delete:
             method = requests.delete
-        return method(url, auth=auth, json=json)
+        return method(url, auth=auth, json=json, params=params)
 
 
 class SystemCall(QHelper):

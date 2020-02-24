@@ -361,7 +361,7 @@ class TicketingByAtlassian(TicketingMixin):
     def fetch_ticket(self, cmd, code):
         data = self._get_ticket(code)
         ret = Ticket(self, code)
-        ret['Owner'] = data['fields']['creator']['name']
+        ret['Owner'] = data['fields']['creator']['emailAddress']
         ret['Title'] = data['fields']['summary']
         ret['Notes'] = data['fields']['description']
         return ret
@@ -374,9 +374,12 @@ class TicketingByAtlassian(TicketingMixin):
         """
         Assign ticket to myself and look for transition to 'In Progress' and do it if found.
         """
-        data = {"name": self.settings.TICKETING_USER.split('@')[0]}
+        if not self.settings.TICKETING_ID:
+            raise QError("User for Atlassian TICKETING_ID is not set.")
+        data = {"accountId": self.settings.TICKETING_ID}
         resp = Requests(self.settings)(self.settings.ATLASSIAN_URL + '/rest/api/2/issue/' + ticket.code + '/assignee', put=data, auth=self._ticketing_auth())
         if (resp.status_code != 204):
+            print resp.text
             raise QError("Claiming ownership of the ticket failed.")
         self._set_ticket_status(ticket, self.settings.ATLASSIAN_STATUS_WORKING)
 

@@ -117,7 +117,9 @@ class QSettings:
         self.TICKET_BRANCH_REGEX = r'([0-9]+)'
         # Regex matching ticket code when given as an argument to Q.
         self.TICKET_NUMBER_REGEX = r'^([0-9]+)$'
-        # User name in the ticketing system.
+        # User ID in the ticketing system.
+        self.TICKETING_ID = None
+        # User name or ID in the ticketing system.
         self.TICKETING_USER = None
         # Password in the ticketing system.
         self.TICKETING_PASSWORD = None
