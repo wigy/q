@@ -361,7 +361,8 @@ class TicketingByAtlassian(TicketingMixin):
     def fetch_ticket(self, cmd, code):
         data = self._get_ticket(code)
         ret = Ticket(self, code)
-        ret['Owner'] = data['fields']['creator']['emailAddress']
+        if 'emailAddress' in data['fields']['creator']:
+            ret['Owner'] = data['fields']['creator']['emailAddress']
         ret['Title'] = data['fields']['summary']
         ret['Notes'] = data['fields']['description']
         return ret
