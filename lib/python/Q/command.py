@@ -125,6 +125,8 @@ class Command:
         """
         from q import Q
         self.app = self.app.q.find_project(code)
+        if self.app is None:
+            raise Exception('Unable to find project for ticket code %r.' % code)
         self.ticket = Ticket(self.app, code)
         self.ticket.load()
 

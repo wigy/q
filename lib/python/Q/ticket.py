@@ -69,8 +69,10 @@ class Ticket:
 
     def __init__(self, app, code=None):
         from .command import Command
+        if app is None:
+            raise Exception('Ticket constructor must be called with Project instance, not None.')
         if isinstance(app, Command):
-            raise Exception('Ticket constructor must be called with Project instance.')
+            raise Exception('Ticket constructor must be called with Project instance, not Command.')
         self.app = app
         self.settings = app.settings
         if code and not re.match(self.settings.TICKET_NUMBER_REGEX, code):
